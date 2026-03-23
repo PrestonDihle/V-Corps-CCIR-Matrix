@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>V Corps CCIR — Mobile</title>
+<style>
+  :root {
+    --army-dark:  #2d3a1e;
+    --army-green: #4a5c3a;
+    --army-tan:   #c8b87a;
+    --army-light: #f0ece0;
+    --bg:         #eae6da;
+    --card-bg:    #ffffff;
+    --border:     #d4cdb8;
+    --c-red:      #a93226;
+    --c-amber:    #d68910;
+    --c-green:    #1e8449;
+    --c-blue:     #2471a3;
+    --c-gray:     #717d7e;
+    --c-wu:       #922b21;
+    --c-fl:       #d4ac0d;
+    --text:       #1a1a1a;
+    --subtext:    #555;
+    --header-h:   112px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 15px;
+    background: var(--bg);
+    color: var(--text);
+    overscroll-behavior: none;
+  }
+
+  /* ── STICKY HEADER ── */
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: var(--army-dark);
+    border-bottom: 3px solid var(--army-tan);
+    padding: env(safe-area-inset-top, 0) 0 0;
+  }
+
+  .unclass-strip {
+    background: #27ae60;
+    color: #fff;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    padding: 3px 0;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px 6px;
+  }
+
+  .header-row svg { flex-shrink: 0; }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    line-height: 1.2;
+  }
+  .header-text p {
+    font-size: 10px;
+    color: #b8c8a0;
+    margin-top: 2px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 7px;
+    padding: 0 12px 9px;
+  }
+
+  .search-row input {
+    flex: 1;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f0ece0;
+    color: var(--text);
+    outline: none;
+  }
+  .search-row input::placeholder { color: #888; }
+
+  .search-row select {
+    padding: 9px 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #f0ece0;
+    color: var(--text);
+    outline: none;
+    max-width: 110px;
+  }
+
+  .result-strip {
+    background: var(--army-green);
+    color: #d4e8b0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    padding: 4px 14px;
+    text-align: center;
+  }
+
+  /* ── FILTER CHIPS ── */
+  .chip-row {
+    background: #1e2b12;
+    padding: 6px 12px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chip-row::-webkit-scrollbar { display: none; }
+
+  .chip {
+    flex-shrink: 0;
+    background: #4a6030;
+    color: #e8ecd8;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .chip:active { background: #6a8050; }
+  .chip.urg-c   { background: #922b21; color: #fff; }
+  .chip.urg-i   { background: #d4ac0d; color: #1a1a1a; }
+  .chip.urg-r   { background: #1a6b3c; color: #fff; }
+  .chip.active  { outline: 2px solid var(--army-tan); outline-offset: 1px; }
+
+  /* ── LIST ── */
+  .list-wrap {
+    padding: 10px 10px 30px;
+    padding-top: calc(var(--header-h) + 10px);
+  }
+
+  /* Category section header */
+  .cat-section-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 6px;
+    padding: 0 2px;
+  }
+  .cat-section-hdr:first-child { margin-top: 2px; }
+  .cat-section-name {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--army-green);
+  }
+  .cat-section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .cat-section-count {
+    font-size: 11px;
+    color: #999;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    margin-bottom: 7px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: box-shadow .15s;
+  }
+  .card:active { box-shadow: 0 0 0 2px var(--army-tan); }
+
+  .card-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+  }
+
+  /* Left urgency stripe */
+  .card[data-urg="C"] { border-left: 4px solid var(--c-red); }
+  .card[data-urg="I"] { border-left: 4px solid var(--c-amber); }
+  .card[data-urg="R"] { border-left: 4px solid var(--c-green); }
+
+  .card-num {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--subtext);
+    min-width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  .card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .urg-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 5px;
+    letter-spacing: .5px;
+  }
+  .urg-C { background: var(--c-red);   color: #fff; }
+  .urg-I { background: var(--c-amber); color: #1a1a1a; }
+  .urg-R { background: var(--c-green); color: #fff; }
+
+  .chevron {
+    font-size: 13px;
+    color: #bbb;
+    transition: transform .2s;
+    line-height: 1;
+  }
+  .card.open .chevron { transform: rotate(180deg); }
+
+  /* ── EXPANDED DETAIL PANEL ── */
+  .card-detail {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 13px 14px 14px;
+    background: #fafaf7;
+    animation: slideDown .18s ease-out;
+  }
+  .card.open .card-detail { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Description */
+  .detail-desc {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 12px;
+  }
+  .detail-desc:empty { display: none; }
+
+  /* Meta row: Classification */
+  .detail-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .meta-label {
+    font-size: 11px;
+    color: var(--subtext);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .cls-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 5px;
+    letter-spacing: .5px;
+  }
+  .cls-S { background: #ffeeba; color: #7d6008; }
+  .cls-U { background: #d4efdf; color: #1a6b3c; }
+
+  /* Notification level grid */
+  .notif-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--subtext);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 7px;
+  }
+
+  .notif-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .notif-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .notif-cell-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .notif-pill {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 0;
+    width: 100%;
+    text-align: center;
+    border-radius: 5px;
+    letter-spacing: .3px;
+  }
+  .np-WU { background: var(--c-wu);   color: #fff; }
+  .np-FL { background: var(--c-fl);   color: #1a1a1a; }
+  .np-R  { background: var(--c-blue); color: #fff; }
+  .np-D  { background: var(--c-gray); color: #fff; }
+  .np-xx { background: #444;          color: #fff; }
+
+  /* Notes */
+  .notes-section { margin-top: 4px; }
+  .note-item {
+    background: #fff8e8;
+    border-left: 3px solid var(--army-tan);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #333;
+  }
+  .note-item:last-child { margin-bottom: 0; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--subtext);
+  }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: #999;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0));
+    background: var(--bg);
+    letter-spacing: .5px;
+  }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- STICKY HEADER -->
+<div class="top-bar" id="topBar">
+  <div class="unclass-strip">UNCLASSIFIED</div>
+  <div class="header-row">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="38" height="38" aria-label="V Corps patch">
+      <polygon points="50,3 97,36.5 79,97 21,97 3,36.5" fill="#1b3a78" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="50"  y1="3"    x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="97"  y1="36.5" x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="79"  y1="97"   x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="21"  y1="97"   x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="3"   y1="36.5" x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+    </svg>
+    <div class="header-text">
+      <h1>V Corps CCIR Matrix</h1>
+      <p>As of 20 February 2026 &mdash; Tap any entry for full details</p>
+    </div>
+  </div>
+  <div class="search-row">
+    <input type="search" id="searchBox" placeholder="&#128269; Search CCIRs…" oninput="applyFilters()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <select id="urgFilter" onchange="applyFilters()">
+      <option value="">All Urgency</option>
+      <option value="C">&#9888; Critical</option>
+      <option value="I">Immediate</option>
+      <option value="R">Routine</option>
+    </select>
+  </div>
+  <div class="chip-row" id="chipRow">
+    <span class="chip" data-cat="" onclick="setChip(this,'')">All</span>
+    <span class="chip" data-cat="AVN"   onclick="setChip(this,'AVN')">Aviation</span>
+    <span class="chip" data-cat="CYBER" onclick="setChip(this,'CYBER')">Cyber</span>
+    <span class="chip" data-cat="GEN"   onclick="setChip(this,'GEN')">General</span>
+    <span class="chip" data-cat="IAMD"  onclick="setChip(this,'IAMD')">IAMD</span>
+    <span class="chip" data-cat="OPS"   onclick="setChip(this,'OPS')">OPS</span>
+    <span class="chip" data-cat="RUS"   onclick="setChip(this,'RUS')">Russia</span>
+    <span class="chip" data-cat="SPOT"  onclick="setChip(this,'SPOT')">SPOT</span>
+    <span class="chip" data-cat="R-27"  onclick="setChip(this,'R-27')">R-27</span>
+    <span class="chip" data-cat="UKR"   onclick="setChip(this,'UKR')">Ukraine</span>
+  </div>
+  <div class="result-strip" id="resultStrip">Loading…</div>
+</div>
+
+<!-- CARD LIST -->
+<div class="list-wrap" id="listWrap"></div>
+
+<div class="footer">UNCLASSIFIED &mdash; V Corps CCIR Matrix &mdash; 20 FEB 2026</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+const NOTES = {
+  1:  `<strong>Note 1 — sUAS Additional Reporting:</strong> Written USAREUR-AF UXS 16-Line report and Storyboard. sUAS that was engaged, had a mission impact or unsafe situation requires additional reporting IAW USAREUR-AF OPORD 0014-21 (Standardized UAS Reporting). Reporting of any sUAS incident will include specific information related to the engagement. i.e.: Was the engagement "successful" and was the sUAS downed? Or was the engagement "unsuccessful" and the sUAS was not fully defeated and remains in play as a threat.`,
+  2:  `<strong>Note 2 — VIP Visit Reporting:</strong> Within 12 hours after visit, provide an executive summary that includes: arrival / departure time, location, unit, meeting topics, and any significant takeaway from meetings and visit. USAREUR-AF report due to HQDA NLT 24-hours after visit.`,
+  3:  `<strong>Note 3 — Death Report Requirements:</strong> Death report must include: the cause of death (if unknown, indicate "cause of death is unknown" and follow up); whether NOK notification is complete or pending; whether alcohol or drugs were involved; use of seatbelts in vehicular accidents; specific indication if death was a suicide or suspected suicide.`,
+  4:  `<strong>Note 4 — Unauthorized Installation Access:</strong> The Watch will enter Unauthorized Installation Access (UIA) to C2IE IAW JS J3 reporting EXORD 20230411, TAB C.`,
+  5:  `<strong>Note 5 — CG Notification for SM Death:</strong> For death of SM, the Watch requires confirmation of CG to CG notification prior to publishing the CII to the CG. If the CG is not available then DCG or CoS notification.`,
+  6:  `<strong>Note 6 — Accountability & Critical Infrastructure:</strong> Provide hourly accountability reports to the Watch Officer until 100% achieved. Additionally, report if any of the following are targeted/impacted: C2 system targeted/destroyed/unauthorized access; key logistics sites; Space ISR Asset; Airfields.`,
+  7:  `<strong>Note 7 — Host Nation Arrest:</strong> Arrest or charging of USAREUR-AF forces in any USEUCOM or USAFRICOM country requires immediate notification to the Staff Judge Advocate for the General Court Martial Convening Authority. SJAs must take immediate action to include interacting with the host nation authorities on behalf of the CG.`,
+  8:  `<strong>Note 8 — Lost Training Time:</strong> When processing this CCIR, please refer to the "LOST TRAINING TIME" EMAIL DISTRIBUTION LIST found in the Battle NCO Book.`,
+  9:  `<strong>Note 9 — Class A–C Accident Notification:</strong> Class A–C Aviation or Ground Vehicle Accidents require a phone call from Commanders to V Corps CG, followed by an email with the 5Ws to V Corps CG, V Corps DCGs, V Corps CSM, V Corps COS, V Corps G3, V Corps G33, and V Corps G33N.`,
+  10: `<strong>Note 10 — SHARP / Sexual Assault Reporting:</strong> V Corps Watch Officer / Battle NCO will notify UR-AF Watch desk. The UR-AF Watch Officer will immediately notify the UR-AF CG and CSM of the reported incident.`,
+  11: `<strong>Note 11 — M/FS-LIDS Reporting:</strong> Routine response to G34 section lead at VCF. Units will ensure the equipment status is correctly reflected on their ESR immediately following the CCIR report; all Maven layers are updated accordingly.`,
+  12: `<strong>Note 12 — Safety Email CC Requirement:</strong> When the CCIR is submitted to OPSCEN box, all units will CC the V Corps Safety email distro at: usarmyftknoxvcorpssafety@army.mil`,
+  13: `<strong>Note 13 — Operational Readiness Reporting:</strong> Impacted units will provide verbal notification to the V Corps Watch Desk within 1 hour of notification of incident. Impacted units will be prepared to discuss depth and scope of impacts, anticipated length of time of mission impact, and steps (or requests) that are being taken to restore/remedy OR rate.`,
+  14: `<strong>Note 14 — PAO Holding Statement:</strong> V Corps PAO will draft and provide a holding statement to the UR-AF PAO within two (2) hours after receiving notification of any incident that will likely receive negative media attention. V Corps PAO will provide a backbrief to G33 of the incident and the holding statement within 1 hour of submission to UR-AF.`,
+  15: `<strong>Note 15 — FPCON Change Information Requirements:</strong> Provide the Purpose and DTG of directed change. Provide specific measure(s) that unit (or FOS) is unable to maintain or achieve.`
+};
+
+const CCIRS = [
+  // AVIATION
+  { cat:'AVN',   num:'1',      urg:'C', cls:'S', title:'Missing manned V Corps aircraft', desc:'Aircraft lost radio or radar contact with flight controllers.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'AVN',   num:'2',      urg:'C', cls:'U', title:'Class "A" aviation accident', desc:'Meeting at least one criteria:\n• Equipment or property damage of $2,500,000 or more.\n• Aircraft destroyed, missing, or abandoned.', notes:[9], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'AVN',   num:'3',      urg:'I', cls:'U', title:'Class "B" aviation accident', desc:'Meeting at least one of the following criteria:\n• Equipment or property damage of at least $600,000 but less than $2,500,000.\n• Three or more personnel are hospitalized as inpatients as the result of a single occurrence.', notes:[9], g33:'WU', g3:'WU', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'AVN',   num:'4',      urg:'I', cls:'U', title:'Lasing of V Corps aircraft', desc:'The aircrew experienced lasing interference.', notes:[6,9], g33:'R', g3:'R', cos:'D', dcg:'D', cg:'D' },
+  { cat:'AVN',   num:'5',      urg:'R', cls:'U', title:'Class "C" aviation accident', desc:'Equipment or property damage of at least $60,000 but less than $600,000. No injuries to MIL or civilian personnel.', notes:[9], g33:'WU', g3:'WU', cos:'FL', dcg:'R', cg:'R' },
+  { cat:'AVN',   num:'6',      urg:'R', cls:'S', title:'Actual or potential change that degrades mission capability', desc:'Actual or potential change that degrades or negatively impacts training, current operations or support to contingency operations.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'AVN',   num:'7A',     urg:'I', cls:'S', title:'UNMANNED V Corps aircraft — damaged/missing/downed', desc:'Aircraft is damaged, missing (lost radio or radar contact with flight controllers) or downed.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'AVN',   num:'7B',     urg:'I', cls:'S', title:'UNMANNED V Corps aircraft — lost link, potential cross-border', desc:'Aircraft has lost link to the ground control station, and there is a reasonable belief that direction of flight (DOF) and battery life could place the aircraft on an azimuth to cross an international boundary line.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'AVN',   num:'8',      urg:'I', cls:'U', title:'Grounding of V Corps aircraft or change to freedom of movement', desc:'', notes:[6,9], g33:'R', g3:'R', cos:'D', dcg:'D', cg:'D' },
+  // CYBER
+  { cat:'CYBER', num:'1',      urg:'C', cls:'U', title:'Cyber CAT I / II incident', desc:'Compromise that allows unauthorized privileged or non-privileged access to a USAREUR-AF network or system.', notes:[6], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'CYBER', num:'2',      urg:'I', cls:'S', title:'Complete loss of USAREUR-AF DRSN capability', desc:'', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'CYBER', num:'3',      urg:'C', cls:'U', title:'Loss or compromise of COMSEC', desc:'', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'CYBER', num:'4',      urg:'I', cls:'S', title:'Communication network or mission system outage > 4 hours', desc:'Communication network (NIPR, SIPR, MPE, BICES) or mission system (i.e., JOPES) outage greater than four hours.', notes:[], g33:'FL', g3:'FL', cos:'R', dcg:'R', cg:'R' },
+  { cat:'CYBER', num:'5',      urg:'R', cls:'S', title:'Spillage Incident', desc:'Unintentional or deliberate exposure of sensitive data or information on a computer or system that is lower than the intended classification level.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  // GEN
+  { cat:'GEN',   num:'1',      urg:'I', cls:'U', title:'Media attention', desc:'Event involving V Corps Personnel, assets, or installations which is likely to generate negative media attention. If incident involves manned aircraft, report through CCIR - AVN 2.', notes:[14], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'GEN',   num:'2',      urg:'C', cls:'U', title:'Protests that place V Corps installations at risk', desc:'Protests that turn violent or in which protestors attempt to gain or have gained access to the installation.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'GEN',   num:'3',      urg:'I', cls:'U', title:'High visibility mortuary affairs (MA) event', desc:'MA movement scheduled through the V Corps AO that might be considered high profile or politically sensitive.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'GEN',   num:'4',      urg:'C', cls:'S', title:'International incident involving V Corps forces', desc:'Violations of the Geneva Conventions; incursion of any sovereign border; atrocities; fratricide; genocide; collateral damage causing civilian deaths.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'GEN',   num:'5',      urg:'R', cls:'U', title:'VIP visit to V Corps', desc:'Planned visit to a V Corps unit or Installation by: POTUS, VPOTUS, U.S. GOV Secretary, Foreign leader or senior dignitary, Ambassador, GOVDEL, CODEL, STAFFDEL, Other Service 4-Star or above equivalent.', notes:[2], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'GEN',   num:'6',      urg:'R', cls:'U', title:'Unaccounted for AA&E', desc:'Theft, attempted theft, suspected theft, loss, unaccounted for, or recovered government firearms ammunition and explosives (AA&E) of any type or caliber.\nNote: Does not include expended ammunition (duds) found on training areas or devices turned into amnesty boxes at ammunition supply points.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'GEN',   num:'7',      urg:'R', cls:'U', title:'Theft of a Government vehicle', desc:'Applies to tactical or combat vehicle.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'GEN',   num:'8',      urg:'R', cls:'U', title:'POL Spill', desc:'• >25 gallons that spill onto land\n• Any volume into a body of water (to include storm drains)\n• Any spill that occurs outside a military fenceline\n• Any spill that is determined to be otherwise significant by the unit EO officer', notes:[12], g33:'FL', g3:'FL', cos:'R', dcg:'D', cg:'D' },
+  { cat:'GEN',   num:'9',      urg:'R', cls:'U', title:'SM life saving intervention', desc:'Non-combat intervention that results in the prevention of an attack by individual or individuals, or preservation of life (lifesaving action).', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'GEN',   num:'10',     urg:'C', cls:'U', title:'Unplanned detonation of an explosive device', desc:'Unplanned detonation within one kilometer of V Corps installation or troop concentration.', notes:[6], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'GEN',   num:'11',     urg:'I', cls:'U', title:'Planned detonation of an explosive device', desc:'Planned detonation (i.e., WWII explosive device) within one kilometer of V Corps installation or troop concentration.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  // IAMD
+  { cat:'IAMD',  num:'1',      urg:'C', cls:'S', title:'Loss of US Patriot coverage of DAL', desc:'Complete loss of US Patriot coverage of a DAL within USEUCOM and USAFRICOM AORs.', notes:[6], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'IAMD',  num:'2',      urg:'I', cls:'S', title:'CDR USEUCOM changed BPL for Operation ATLANTIC SENTRY (OAS)', desc:'', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'IAMD',  num:'3',      urg:'I', cls:'U', title:'M/FS-LIDS operational degradation in manning and/or system status', desc:'The degradation of an M/FS-LIDS system from an FMC status (regardless of degradation level); loss of system offensive and/or sensing capability; any manning constraint that impacts or limits the full operation of the system.', notes:[11], g33:'FL', g3:'FL', cos:'FL', dcg:'R', cg:'R' },
+  // OPS
+  { cat:'OPS',   num:'1',      urg:'C', cls:'U', title:'Search and rescue operation', desc:'Confirmed discovery, rescue, release of US Army personnel or DA Civilians within V Corps AO that required US military support.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'OPS',   num:'2',      urg:'I', cls:'U', title:'Failure or degradation of mission support', desc:'Safety of flight/Use messages deadlining equipment or failure of equipment that has an impact or potential impact to mission support.', notes:[6], g33:'FL', g3:'FL', cos:'FL', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'3',      urg:'I', cls:'U', title:'Tier-1 Critical Asset incident', desc:'Impact to Tier-1 asset that has an impact or potential impact to operations.', notes:[6], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'4',      urg:'R', cls:'S', title:'Required Delivery Date (RDD) impact on strategic movements', desc:'Delays to deployment or redeployment missions that will impact the RDD greater than 24-hours.', notes:[6], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'5',      urg:'I', cls:'U', title:'Change to USAREUR-AF Force Protection Condition (FPCON)', desc:'FPCON increase or decrease at V Corps installations.', notes:[15], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'6',      urg:'I', cls:'S', title:'USEUCOM Watch Condition (WATCHCON) change', desc:'USEUCOM increased or decreased their WATCHCON level.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'7',      urg:'I', cls:'U', title:'Change to V Corps Health Protection Condition (HPCON)', desc:'USAREUR-AF increased or decreased HPCON level.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'8',      urg:'I', cls:'S', title:'Unable to achieve/maintain FPCON', desc:'V Corps installation unable to achieve or maintain required FPCON.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'9',      urg:'I', cls:'S', title:'Unexpected deployment of Contingency Response Force (CRF)', desc:'Emerging situation that requires V Corps to deploy a CRF.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'10',     urg:'I', cls:'S', title:'COOP activation', desc:'USAREUR-AF relocate and/or COOP Watch Operations to an alternate location.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'11',     urg:'I', cls:'U', title:'Degradation of aerial or sea ports of Embarkation/Debarkation', desc:'Degradation of a port that has an impact or potential impact to V Corps operations.', notes:[6], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'12',     urg:'I', cls:'S', title:'Transiting of U.S. Army Vessels in EUCOM AOR', desc:'Report the arrival or departure of "high interest" U.S. Army vessels in the V Corps AOR.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  { cat:'OPS',   num:'13',     urg:'I', cls:'S', title:'Nation-State Offensive Operations', desc:'Offensive operations by other nation-states that impact V Corps operations.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'OPS',   num:'14',     urg:'I', cls:'U', title:'Loss of Range Training Time', desc:'The loss of scheduled and confirmed range training time due to intervention by Host Nation organizations.', notes:[8], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'R' },
+  { cat:'OPS',   num:'15',     urg:'C', cls:'S', title:'Operational Readiness Rate with impact to mission', desc:'Operational Readiness (O/R) rate for critical pacing items has fallen below tolerance. As a result, impacted unit(s) are no longer able to accomplish their directed mission.', notes:[13], g33:'WU', g3:'FL', cos:'FL', dcg:'FL', cg:'R' },
+  // RUS
+  { cat:'RUS',   num:'1',      urg:'C', cls:'S', title:'Suspension of Russian deconfliction line', desc:'Russian Federation suspends use of the U.S.-Russia Deconfliction Line either by refusal to engage in meaningful deconfliction or refusal to answer the deconfliction line in a 24-hour period.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'RUS',   num:'2',      urg:'C', cls:'S', title:'Russian incursion into the V Corps AoR', desc:'Ground, air, or water incursion to include sUAS crossing into V Corps protected air space.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  // SPOT
+  { cat:'SPOT',  num:'1',      urg:'C', cls:'U', title:'Death of USAREUR-AF personnel', desc:'V Corps Service member (SM), DA Civilian (DAC), DoD Contractor (CTR) and their sponsored dependents, and Local Nationals in an on-duty status. This includes SM, DAC and CTR personnel in a TDY or leave status, regardless of location.', notes:[3], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'SPOT',  num:'2',      urg:'I', cls:'U', title:'Any training or non-training incident with very serious injury or illness', desc:'Non-training accident/incident resulting in very serious injury to V Corps military and DA Civilian personnel. (E.G., loss of eyesight, paralysis, critical condition, discovery of an acute life threatening medical condition).', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'3',      urg:'I', cls:'U', title:'Training or non-training incident with serious injury', desc:'Training or troop movement accident/incident resulting in a serious injury requiring air medical evacuation or hospitalization, but not rising to the level of Spot 2.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'4',      urg:'C', cls:'U', title:'Incident involving V Corps senior leader (CSM, CW5, COL/GS15, GO/SES)', desc:'Criminal activity/arrest, imminent threat, critical condition or death of a V Corps senior leader.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'SPOT',  num:'5',      urg:'I', cls:'U', title:'Death of an LN involving V Corps personnel', desc:'V Corps military or DA Civilians are involved, other than a witness, in the death of a local national.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'6',      urg:'I', cls:'U', title:'Sexual assault/harassment — senior SM or SHARP professional', desc:"Any unrestricted sexual assault report or formal sexual harassment complaint when the Subject is one of the following:\n• Commander, O-5(P) and above, CSM, Senior DA Civilian (GS-15/SES).\n• SHARP professional currently serving or with an active D-SAACP certification.\n• Cases expected to attract high media or Congressional attention.", notes:[10], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'7',      urg:'R', cls:'U', title:'Sexual assault', desc:'Indecent/sexual assault and rape when a V Corps member (MIL, DAC, Government Contractor, or their family member) within V Corps AO, is either a victim or an alleged offender.', notes:[], g33:'R', g3:'R', cos:'D', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'8',      urg:'I', cls:'S', title:'Security threat or attack against V Corps installations or forces', desc:'• Report of suspicious package at an installation or facility that is assessed to be an actual threat.\n• Threat, attack, or incident at a government facility or event that affects or potentially affects personnel or operation.\n• Individual on the known/suspected terrorist watch list attempts to gain access to an installation.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'9',      urg:'I', cls:'U', title:'Failed security measures at a V Corps installation', desc:'Any unauthorized/unidentified access onto an army installation when installation security measures fail to prevent access.', notes:[4], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'10',     urg:'I', cls:'U', title:'Request for political asylum or defection', desc:'V Corps Service member or DA Civilian request political asylum in a foreign country or indication of defection.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'11',     urg:'R', cls:'U', title:'Suicide attempt', desc:'Attempted suicide by a V Corps Service member, Department Army Civilian or their sponsored dependent.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'12',     urg:'R', cls:'U', title:'Passive Suicidal Ideation', desc:"V Corps Service member or Department Army Civilian expressed a suicidal ideation without a plan to take one's life.", notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'13',     urg:'R', cls:'U', title:'Active Suicidal Ideation', desc:"V Corps Service member or Department Army Civilian expressed a suicidal ideation and has developed a plan to take one's life.", notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'14',     urg:'I', cls:'S', title:'Small Unmanned Aircraft System (sUAS)', desc:'sUAS sighting IVO U.S. military installations or personnel. Additional reporting required if a UAS was engaged, created a mission impact or deemed as an unsafe situation.', notes:[1], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'15',     urg:'C', cls:'U', title:'Use of deadly force by a SM in an on-duty security capacity', desc:'Deadly force is used by an MP or other SM while performing a security function.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'SPOT',  num:'16',     urg:'R', cls:'U', title:'Serious criminal offense', desc:'Serious offense by a Service member or DA civilian; murder or attempted murder, aggravated arson, kidnapping, larceny exceeding $10,000, transportation or sale of drugs exceeding $5,000.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'17',     urg:'I', cls:'U', title:'Natural or manmade disaster', desc:'Disaster impacting USAREUR-AF installations, equipment and/or operations.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'18',     urg:'R', cls:'U', title:'Domestic violence', desc:'SM is the victim or subject (unrestricted reporting only).', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'19',     urg:'R', cls:'U', title:'Child Abuse', desc:'Actual or alleged abuse or sexual abuse, occurring in any USAREUR-AF sponsored activity, organizational setting, or homebased family child care facilities.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'20',     urg:'I', cls:'U', title:'SM absent-unknown (AUN) or AWOL', desc:"Duty status change to AUN pending unit determination whether a Soldier's unauthorized absence (UA) is voluntary or involuntary.", notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'21',     urg:'R', cls:'U', title:'Suspension or relief of command', desc:'Suspension or relief of CSM, LTC or above in a command position.', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'22',     urg:'I', cls:'U', title:'Hostile action against V Corps personnel', desc:'V Corps military, DA Civilians, contractors and their dependents reported as missing when hostile intent is suspected, or taken hostage or captured by terrorist or foreign actor organizations.', notes:[], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'SPOT',  num:'26',     urg:'I', cls:'U', title:'Death or capture of a foreign leader in V Corps AO', desc:'', notes:[], g33:'FL', g3:'FL', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'27',     urg:'I', cls:'U', title:'Incident involving detainees of Army confinement or correctional facilities', desc:'Prisoner or detainee that escapes from confinement or custody, disturbance requiring use of force, allegations of detainee abuse, and serious injury or death of a prisoner.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'28',     urg:'R', cls:'U', title:'Arrest of non-senior USAREUR-AF personnel by host nation law enforcement', desc:'Arrest of a non-senior (below CSM, O6/GS15) Service member or Army Civilian by host nation police for a criminal offense that may cause international concern (i.e., theft, hit and run, physical violence, etc.).', notes:[7], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'29',     urg:'R', cls:'U', title:'Any other incident of concern', desc:'Incident that may be of concern to the commander based on the nature, gravity, or potential consequences of the incident. If Class A–C Ground Vehicle Accident, see Note 9.', notes:[9], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'SPOT',  num:'30',     urg:'C', cls:'U', title:'Class "A" ground accident', desc:'An Army mishap in which:\n(1) An injury and/or occupational illness results in a fatality or permanent total disability; or\n(2) A manned Army vehicle or equipment destroyed, missing, or abandoned; or\n(3) The resulting total cost of property damage is $2.5 million or more.', notes:[9], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' },
+  { cat:'SPOT',  num:'31',     urg:'C', cls:'U', title:'Class "B" ground accident', desc:'An Army mishap in which:\n(1) An injury and/or occupational illness results in permanent partial disability; or\n(2) Three or more personnel are hospitalized as inpatients as the result of a single occurrence; or\n(3) The resulting total cost of property damage is $600,000 or more but less than $2.5 million.', notes:[9], g33:'WU', g3:'WU', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'SPOT',  num:'32',     urg:'C', cls:'U', title:'Class "C" ground accident', desc:'An Army mishap in which:\n(1) A nonfatal injury or occupational illness results in 1 or more days away from work or training beyond the day or shift on which it occurred; or\n(2) Temporary disability ensues resulting in days away from work and does not meet Class A or B definition; or\n(3) The resulting total cost of property damage is $60,000 or more but less than $600,000.', notes:[9], g33:'WU', g3:'WU', cos:'FL', dcg:'FL', cg:'FL' },
+  // R-27
+  { cat:'R-27',  num:'See**',  urg:'R', cls:'U', title:'Any other report(s) of sexual harassment — below priority/immediate threshold', desc:'Any other report(s) of sexual harassment that does not meet the priority or immediate categories.\n**This is a V Corps internal CCIR; There is no UR-AF corresponding CCIR Number unless elevated to SPOT 6 or SPOT 7.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'R', cg:'R' },
+  // UKR
+  { cat:'UKR',   num:'1',      urg:'I', cls:'S', title:'USAREUR-AF Service member travel to Ukraine', desc:'SAG-U or USAREUR-AF personnel arriving and departing Ukraine Zone 2 or Zone 3.\n**This is a V Corps internal CCIR; There is no UR-AF corresponding CCIR with this event.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'UKR',   num:'2',      urg:'R', cls:'U', title:'Ukraine Service member transfer to LRMC', desc:'Medical evacuated UAF Service Member received at LRMC for treatment.', notes:[], g33:'R', g3:'R', cos:'R', dcg:'D', cg:'D' },
+  { cat:'UKR',   num:'3',      urg:'R', cls:'U', title:'UAF SM absent unknown from USAREUR-AF installation', desc:'UAF SM AUN while attending training at a USAREUR-AF installation.', notes:[], g33:'WU', g3:'WU', cos:'FL', dcg:'FL', cg:'FL' },
+  { cat:'UKR',   num:'4',      urg:'C', cls:'S', title:'Missile impact near J-town or Embassy Kyiv', desc:'Missile impact near Jasionka, Poland or Embassy Kyiv.', notes:[6], g33:'WU', g3:'WU', cos:'WU', dcg:'WU', cg:'WU' }
+];
+
+const CAT_LABELS = {
+  AVN:'Aviation', CYBER:'Cyber', GEN:'General', IAMD:'IAMD',
+  OPS:'Operations', RUS:'Russia', SPOT:'SPOT', 'R-27':'R-27', UKR:'Ukraine'
+};
+
+const URG_LABELS = { C:'Critical', I:'Immediate', R:'Routine' };
+
+// ═══════════════════════════════════════════════════
+// HEADER HEIGHT MEASUREMENT
+// ═══════════════════════════════════════════════════
+function updateHeaderHeight() {
+  const h = document.getElementById('topBar').offsetHeight;
+  document.documentElement.style.setProperty('--header-h', h + 'px');
+  document.getElementById('listWrap').style.paddingTop = (h + 10) + 'px';
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function npClass(code) {
+  return code === 'WU' ? 'np-WU' : code === 'FL' ? 'np-FL' :
+         code === 'R'  ? 'np-R'  : code === 'D'  ? 'np-D'  : 'np-xx';
+}
+
+function buildDetail(row) {
+  // Description
+  const descHtml = row.desc
+    ? `<div class="detail-desc">${row.desc.replace(/\n/g, '<br>')}</div>`
+    : '';
+
+  // Classification + urgency meta
+  const urgLabel = URG_LABELS[row.urg] || row.urg;
+  const urgClass = 'urg-' + row.urg;
+  const clsClass = 'cls-' + row.cls;
+  const clsLabel = row.cls === 'S' ? 'Sensitive' : 'Unclassified';
+  const metaHtml = `
+    <div class="detail-meta">
+      <span class="meta-label">Urgency:</span>
+      <span class="urg-badge ${urgClass}">${urgLabel}</span>
+      <span class="meta-label" style="margin-left:8px">Classification:</span>
+      <span class="cls-badge ${clsClass}">${row.cls} — ${clsLabel}</span>
+    </div>`;
+
+  // Notification grid
+  const levels = [
+    { label:'G33',  code: row.g33 },
+    { label:'G3',   code: row.g3  },
+    { label:'CoS',  code: row.cos },
+    { label:'DCG',  code: row.dcg },
+    { label:'CG',   code: row.cg  }
+  ];
+  const cellsHtml = levels.map(l => `
+    <div class="notif-cell">
+      <div class="notif-cell-label">${l.label}</div>
+      <div class="notif-pill ${npClass(l.code)}">${l.code}</div>
+    </div>`).join('');
+  const notifHtml = `
+    <div class="notif-section-label">Notification Levels</div>
+    <div class="notif-grid">${cellsHtml}</div>`;
+
+  // Notes
+  let notesHtml = '';
+  if (row.notes && row.notes.length) {
+    notesHtml = `<div class="notes-section">` +
+      row.notes.map(n => `<div class="note-item">${NOTES[n] || ''}</div>`).join('') +
+    `</div>`;
+  }
+
+  return descHtml + metaHtml + notifHtml + notesHtml;
+}
+
+function toggleCard(card) {
+  const isOpen = card.classList.contains('open');
+  // Close all open cards
+  document.querySelectorAll('.card.open').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    card.classList.add('open');
+    // Scroll card into view with a small delay for animation
+    setTimeout(() => {
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+}
+
+let activeChip = '';
+
+function setChip(el, cat) {
+  activeChip = cat;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchBox').value.toLowerCase().trim();
+  const urg = document.getElementById('urgFilter').value;
+
+  let shown = 0;
+  document.querySelectorAll('.card').forEach(card => {
+    const matchCat = !activeChip || card.dataset.cat === activeChip;
+    const matchUrg = !urg || card.dataset.urg === urg;
+    const matchQ   = !q   || card.dataset.text.includes(q);
+    const show = matchCat && matchUrg && matchQ;
+    card.classList.toggle('hidden', !show);
+
+    // Also hide section headers if needed (handled separately)
+    if (show) shown++;
+  });
+
+  // Hide/show category section headers
+  document.querySelectorAll('.cat-section-hdr').forEach(hdr => {
+    const cat = hdr.dataset.cat;
+    const anyVisible = Array.from(
+      document.querySelectorAll(`.card[data-cat="${cat}"]`)
+    ).some(c => !c.classList.contains('hidden'));
+    hdr.classList.toggle('hidden', !anyVisible);
+  });
+
+  const total = CCIRS.length;
+  document.getElementById('resultStrip').textContent =
+    shown === total ? `All ${total} CCIRs` : `${shown} of ${total} CCIRs`;
+}
+
+function renderList() {
+  const wrap = document.getElementById('listWrap');
+  wrap.innerHTML = '';
+
+  // Group by category in order
+  const ORDER = ['AVN','CYBER','GEN','IAMD','OPS','RUS','SPOT','R-27','UKR'];
+  const grouped = {};
+  ORDER.forEach(cat => { grouped[cat] = []; });
+  CCIRS.forEach(row => {
+    if (grouped[row.cat]) grouped[row.cat].push(row);
+  });
+
+  ORDER.forEach(cat => {
+    const rows = grouped[cat];
+    if (!rows.length) return;
+
+    // Section header
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-section-hdr';
+    hdr.dataset.cat = cat;
+    hdr.innerHTML = `
+      <div class="cat-section-name">${CAT_LABELS[cat] || cat}</div>
+      <div class="cat-section-line"></div>
+      <div class="cat-section-count">${rows.length}</div>`;
+    wrap.appendChild(hdr);
+
+    rows.forEach(row => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.cat  = row.cat;
+      card.dataset.urg  = row.urg;
+      card.dataset.text = [row.cat, row.num, row.title, row.desc,
+        row.g33, row.g3, row.cos, row.dcg, row.cg].join(' ').toLowerCase();
+
+      card.innerHTML = `
+        <div class="card-main" onclick="toggleCard(this.closest('.card'))">
+          <div class="card-num">${row.num}</div>
+          <div class="card-title">${row.title}</div>
+          <div class="card-right">
+            <span class="urg-badge urg-${row.urg}">${URG_LABELS[row.urg]}</span>
+            <span class="chevron">&#8964;</span>
+          </div>
+        </div>
+        <div class="card-detail">${buildDetail(row)}</div>`;
+
+      wrap.appendChild(card);
+    });
+  });
+
+  // Empty state
+  const empty = document.createElement('div');
+  empty.className = 'empty-state hidden';
+  empty.id = 'emptyState';
+  empty.innerHTML = `<div class="emoji">🔍</div><p>No CCIRs match your search.</p>`;
+  wrap.appendChild(empty);
+
+  // Set first chip active
+  document.querySelector('.chip[data-cat=""]').classList.add('active');
+  applyFilters();
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+renderList();
+updateHeaderHeight();
+window.addEventListener('resize', updateHeaderHeight);
+</script>
+</body>
+</html>
