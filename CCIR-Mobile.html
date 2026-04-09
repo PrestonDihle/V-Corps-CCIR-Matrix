@@ -382,6 +382,105 @@
 
   /* ── HIDDEN ── */
   .hidden { display: none !important; }
+
+  /* ── CONTACTS PANEL ── */
+  .contacts-btn {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    background: var(--army-green);
+    color: var(--army-tan);
+    border: 1px solid var(--army-tan);
+    border-radius: 6px;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+  }
+  .contacts-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--bg);
+    overflow-y: auto;
+    padding-bottom: 30px;
+  }
+  .contacts-panel.open { display: block; }
+  .contacts-panel-hdr {
+    background: var(--army-dark);
+    border-bottom: 3px solid var(--army-tan);
+    padding: 14px 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .contacts-panel-hdr h2 {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+  .contacts-close {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.4);
+    color: #fff;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .contacts-body { padding: 12px; }
+  .contacts-unit {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.10);
+    border: 1px solid var(--border);
+  }
+  .contacts-unit-hdr {
+    background: var(--army-dark);
+    color: var(--army-tan);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 9px 14px;
+  }
+  .contacts-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0ece0;
+  }
+  .contacts-row:last-child { border-bottom: none; }
+  .contacts-pos {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--army-dark);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  .contacts-btns { display: flex; gap: 8px; }
+  .m-call-btn {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: .3px;
+  }
+  .m-call-btn.dsn  { background: var(--army-dark); color: var(--army-tan); }
+  .m-call-btn.cell { background: #1e5c8a; color: #fff; }
 </style>
 </head>
 <body>
@@ -389,7 +488,7 @@
 <!-- STICKY HEADER -->
 <div class="top-bar" id="topBar">
   <div class="unclass-strip">UNCLASSIFIED</div>
-  <div class="header-row">
+  <div class="header-row" style="position:relative;">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="38" height="38" aria-label="V Corps patch">
       <polygon points="50,3 97,36.5 79,97 21,97 3,36.5" fill="#1b3a78" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
       <line x1="50"  y1="3"    x2="50" y2="53" stroke="white" stroke-width="2.8"/>
@@ -402,6 +501,7 @@
       <h1>V Corps CCIR Matrix</h1>
       <p>As of 20 February 2026 &mdash; Tap any entry for full details</p>
     </div>
+    <button class="contacts-btn" onclick="toggleContacts()">&#128222; Contacts</button>
   </div>
   <div class="search-row">
     <input type="search" id="searchBox" placeholder="&#128269; Search CCIRs…" oninput="applyFilters()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -425,6 +525,47 @@
     <span class="chip" data-cat="UKR"   onclick="setChip(this,'UKR')">Ukraine</span>
   </div>
   <div class="result-strip" id="resultStrip">Loading…</div>
+</div>
+
+<!-- CONTACTS PANEL -->
+<div class="contacts-panel" id="contactsPanel">
+  <div class="contacts-panel-hdr">
+    <h2>&#128222; Unit Contacts</h2>
+    <button class="contacts-close" onclick="toggleContacts()">&#10005; Close</button>
+  </div>
+  <div class="contacts-body">
+
+    <div class="contacts-unit">
+      <div class="contacts-unit-hdr">12th CAB</div>
+      <div class="contacts-row"><span class="contacts-pos">CDR</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870701">DSN</a><a class="m-call-btn cell" href="tel:01622572685">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">CSM</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870705">DSN</a><a class="m-call-btn cell" href="tel:01622593636">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">CCWO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870706">DSN</a><a class="m-call-btn cell" href="tel:01622965412">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">DCO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870703">DSN</a><a class="m-call-btn cell" href="tel:016097774114">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">XO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870704">DSN</a><a class="m-call-btn cell" href="tel:01622676422">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">S3</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870711">DSN</a><a class="m-call-btn cell" href="tel:01622531221">Cellphone</a></div></div>
+    </div>
+
+    <div class="contacts-unit">
+      <div class="contacts-unit-hdr">2-159 AB</div>
+      <div class="contacts-row"><span class="contacts-pos">CDR</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870901">DSN</a><a class="m-call-btn cell" href="tel:01622965391">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">CSM</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870902">DSN</a><a class="m-call-btn cell" href="tel:0012544621013">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">XO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870903">DSN</a><a class="m-call-btn cell" href="tel:01622565911">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">SWO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870920">DSN</a><a class="m-call-btn cell" href="tel:01625676539">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">S3</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870975">DSN</a><a class="m-call-btn cell" href="tel:01622965391">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">Staff Duty</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705870904">DSN</a><a class="m-call-btn cell" href="tel:09802832626">Cellphone</a></div></div>
+    </div>
+
+    <div class="contacts-unit">
+      <div class="contacts-unit-hdr">1-214 GSAB</div>
+      <div class="contacts-row"><span class="contacts-pos">CDR</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705468392">DSN</a><a class="m-call-btn cell" href="tel:01622676106">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">CSM</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705468393">DSN</a><a class="m-call-btn cell" href="tel:01622634171">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">XO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705465167">DSN</a><a class="m-call-btn cell" href="tel:015208614473">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">SWO</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705468328">DSN</a><a class="m-call-btn cell" href="tel:015256890170">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">S3</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705468304">DSN</a><a class="m-call-btn cell" href="tel:01622965448">Cellphone</a></div></div>
+      <div class="contacts-row"><span class="contacts-pos">Staff Duty</span><div class="contacts-btns"><a class="m-call-btn dsn" href="tel:09641705468009">DSN</a><a class="m-call-btn cell" href="tel:01622341692">Cellphone</a></div></div>
+    </div>
+
+  </div>
 </div>
 
 <!-- CARD LIST -->
@@ -727,6 +868,13 @@ function renderList() {
   // Set first chip active
   document.querySelector('.chip[data-cat=""]').classList.add('active');
   applyFilters();
+}
+
+// ═══════════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════════
+function toggleContacts() {
+  document.getElementById('contactsPanel').classList.toggle('open');
 }
 
 // ═══════════════════════════════════════════════════

@@ -239,6 +239,49 @@
     background: rgba(255,255,255,0.08);
   }
 
+  /* ── CONTACTS SECTION ── */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .contact-unit-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--army-green);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .contact-unit-header {
+    background: var(--army-dark);
+    color: var(--army-tan);
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 7px 12px;
+  }
+  .contact-table { width: 100%; border-collapse: collapse; }
+  .contact-table tr { border-bottom: 1px solid #eee; }
+  .contact-table tr:last-child { border-bottom: none; }
+  .contact-table td { padding: 7px 10px; vertical-align: middle; }
+  .contact-pos { font-size: 12px; font-weight: bold; color: var(--army-dark); text-transform: uppercase; width: 90px; }
+  .contact-btns { display: flex; gap: 5px; }
+  .c-call-btn {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+  }
+  .c-call-btn.dsn  { background: var(--army-dark); color: var(--army-tan); }
+  .c-call-btn.cell { background: #1e5c8a; color: #fff; }
+  .c-call-btn:hover { opacity: 0.85; }
+
   /* ── NOTES SECTION ── */
   .section {
     padding: 14px 16px;
@@ -444,6 +487,7 @@
   <button class="tab-btn active" onclick="showTab('matrix',this)">CCIR Matrix</button>
   <button class="tab-btn" onclick="showTab('notes',this)">Notes (1–15)</button>
   <button class="tab-btn" onclick="showTab('criteria',this)">Reporting Criteria</button>
+  <button class="tab-btn" onclick="showTab('contacts',this)">Contacts</button>
 </div>
 
 <!-- MATRIX TAB -->
@@ -486,6 +530,53 @@
       <tbody id="ccirBody">
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- CONTACTS TAB -->
+<div id="tab-contacts" class="section">
+  <h3>Unit Contacts</h3>
+  <div class="contact-grid">
+
+    <!-- 12th CAB -->
+    <div class="contact-unit-card">
+      <div class="contact-unit-header">12th CAB</div>
+      <table class="contact-table">
+        <tr><td class="contact-pos">CDR</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870701">DSN</a><a class="c-call-btn cell" href="tel:01622572685">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">CSM</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870705">DSN</a><a class="c-call-btn cell" href="tel:01622593636">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">CCWO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870706">DSN</a><a class="c-call-btn cell" href="tel:01622965412">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">DCO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870703">DSN</a><a class="c-call-btn cell" href="tel:016097774114">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">XO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870704">DSN</a><a class="c-call-btn cell" href="tel:01622676422">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">S3</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870711">DSN</a><a class="c-call-btn cell" href="tel:01622531221">Cellphone</a></td></tr>
+      </table>
+    </div>
+
+    <!-- 2-159 AB -->
+    <div class="contact-unit-card">
+      <div class="contact-unit-header">2-159 AB</div>
+      <table class="contact-table">
+        <tr><td class="contact-pos">CDR</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870901">DSN</a><a class="c-call-btn cell" href="tel:01622965391">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">CSM</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870902">DSN</a><a class="c-call-btn cell" href="tel:0012544621013">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">XO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870903">DSN</a><a class="c-call-btn cell" href="tel:01622565911">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">SWO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870920">DSN</a><a class="c-call-btn cell" href="tel:01625676539">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">S3</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870975">DSN</a><a class="c-call-btn cell" href="tel:01622965391">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">Staff Duty</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705870904">DSN</a><a class="c-call-btn cell" href="tel:09802832626">Cellphone</a></td></tr>
+      </table>
+    </div>
+
+    <!-- 1-214 GSAB -->
+    <div class="contact-unit-card">
+      <div class="contact-unit-header">1-214 GSAB</div>
+      <table class="contact-table">
+        <tr><td class="contact-pos">CDR</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705468392">DSN</a><a class="c-call-btn cell" href="tel:01622676106">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">CSM</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705468393">DSN</a><a class="c-call-btn cell" href="tel:01622634171">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">XO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705465167">DSN</a><a class="c-call-btn cell" href="tel:015208614473">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">SWO</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705468328">DSN</a><a class="c-call-btn cell" href="tel:015256890170">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">S3</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705468304">DSN</a><a class="c-call-btn cell" href="tel:01622965448">Cellphone</a></td></tr>
+        <tr><td class="contact-pos">Staff Duty</td><td class="contact-btns"><a class="c-call-btn dsn" href="tel:09641705468009">DSN</a><a class="c-call-btn cell" href="tel:01622341692">Cellphone</a></td></tr>
+      </table>
+    </div>
+
   </div>
 </div>
 
