@@ -455,6 +455,28 @@
         </select>
       </div>
 
+      <div class="consid-item">
+        <label>Alcohol <span class="req">*</span></label>
+        <select id="alcohol">
+          <option value="">— Select —</option>
+          <option>Confirmed</option>
+          <option>Suspected</option>
+          <option>Not Suspected</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>Drugs <span class="req">*</span></label>
+        <select id="drugs">
+          <option value="">— Select —</option>
+          <option>Confirmed</option>
+          <option>Suspected</option>
+          <option>Not Suspected</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
     </div>
 
     <div class="field-group" style="margin-top:14px">
@@ -703,7 +725,7 @@ function validate() {
   const required = [
     'dtg','ccirNum','location','description','cmdActions',
     'smOnPost','chaplain','weaponAccess','barrAssess',
-    'medAccess','highRisk','pendingSep','maritalStatus','deployed',
+    'medAccess','highRisk','pendingSep','maritalStatus','deployed','alcohol','drugs',
     'subName','subRank','subUnit','subDuty'
   ];
   required.forEach(id => { if (!req(id)) { markInvalid(id); ok = false; } });
@@ -772,8 +794,10 @@ function generateReport() {
   lines.push(`    g. SM pending separation:             ${val('pendingSep')}`);
   lines.push(`    h. SM marital status:                 ${val('maritalStatus')}`);
   lines.push(`    i. Deployed within last 12 months:    ${val('deployed')}`);
+  lines.push(`    j. Alcohol:                           ${val('alcohol')}`);
+  lines.push(`    k. Drugs:                             ${val('drugs')}`);
   if (val('unitActions').trim()) {
-    lines.push('    j. Unit actions:');
+    lines.push('    l. Unit actions:');
     val('unitActions').split('\n').forEach(l => lines.push(`       ${l}`));
   }
   lines.push('');
@@ -986,6 +1010,8 @@ function downloadPDF() {
   field('SM pending separation',      val('pendingSep'),     8);
   field('SM marital status',          val('maritalStatus'),  8);
   field('Deployed last 12 months',    val('deployed'),       8);
+  field('Alcohol',                    val('alcohol'),        8);
+  field('Drugs',                      val('drugs'),          8);
   if (val('unitActions').trim()) multilineField('Unit actions', val('unitActions'), 8);
 
   sectionHeader('10. Notification');
