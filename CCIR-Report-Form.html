@@ -32,15 +32,6 @@
   }
 
   /* HEADER */
-  .unclass-strip {
-    background: #27ae60;
-    color: #fff;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    padding: 4px 0;
-  }
   .top-bar {
     background: var(--army-dark);
     border-bottom: 3px solid var(--army-tan);
@@ -258,7 +249,6 @@
 </head>
 <body>
 
-<div class="unclass-strip">UNCLASSIFIED</div>
 <div class="top-bar">
   <div class="header-row">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="40" height="40" aria-label="V Corps patch" style="flex-shrink:0">
@@ -292,7 +282,6 @@
   <div class="form-title">1. Date Time Group (DTG) of This Report</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="dtg">DTG <span class="req">*</span><span class="hint">e.g. 131430Z APR 2026 — click "Now (Zulu)" to auto-fill</span></label>
       <div class="dtg-row">
         <input type="text" id="dtg" placeholder="DDHHmmZ MMM YYYY" autocomplete="off">
         <button class="dtg-now-btn" type="button" onclick="fillDTGNow()">&#128336; Now (Zulu)</button>
@@ -321,7 +310,6 @@
   <div class="form-title">4. Type of Report</div>
   <div class="form-section">
     <div class="field-group">
-      <label>Report Type <span class="req">*</span></label>
       <div class="radio-group" id="reportType">
         <label><input type="radio" name="reportType" value="Initial"> Initial</label>
         <label><input type="radio" name="reportType" value="Follow Up"> Follow Up</label>
@@ -342,7 +330,6 @@
   <div class="form-title">6. Location of Incident</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="location">Location <span class="req">*</span><span class="hint">Grid, address, or named location</span></label>
       <input type="text" id="location" placeholder="Grid coordinates, address, or named location" autocomplete="off">
     </div>
   </div>
@@ -351,8 +338,13 @@
   <div class="form-title">7. Description of Incident</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="description">Incident Description <span class="req">*</span><span class="hint">Include 5 Ws — clearly discern confirmed facts from unconfirmed assumptions</span></label>
-      <textarea id="description" class="tall" placeholder="CONFIRMED: ...&#10;UNCONFIRMED/ASSUMED: ...&#10;&#10;WHAT: &#10;WHERE: &#10;WHO: &#10;WHEN: &#10;WHY/CAUSE:"></textarea>
+      <textarea id="description" class="tall">Who:
+What:
+When:
+Where:
+How:
+
+Clearly discern confirmed facts from unconfirmed assumptions: what happened, specific location of incident, personnel involved, timeline/chain of events, proximate cause [if known] or suspected cause</textarea>
     </div>
   </div>
 
@@ -382,12 +374,7 @@
 
       <div class="consid-item">
         <label>When will the Chaplain visit? <span class="req">*</span></label>
-        <select id="chaplain">
-          <option value="">— Select —</option>
-          <option>Yes — Scheduled</option>
-          <option>No</option>
-          <option>N/A</option>
-        </select>
+        <input type="text" id="chaplain" placeholder="e.g. 1430Z, Scheduled for tomorrow, N/A" autocomplete="off">
       </div>
 
       <!-- item 2: added N/A -->
@@ -459,11 +446,38 @@
         </select>
       </div>
 
+      <div class="consid-item">
+        <label>Alcohol <span class="req">*</span></label>
+        <select id="alcohol">
+          <option value="">— Select —</option>
+          <option>Confirmed</option>
+          <option>Suspected</option>
+          <option>Not Suspected</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>Drugs <span class="req">*</span></label>
+        <select id="drugs">
+          <option value="">— Select —</option>
+          <option>Confirmed</option>
+          <option>Suspected</option>
+          <option>Not Suspected</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
     </div>
 
-    <div class="field-group" style="margin-top:14px">
-      <label for="unitActions">Actions by unit if necessary?<span class="hint"> (optional)</span></label>
-      <textarea id="unitActions" placeholder="Describe any additional unit actions..."></textarea>
+  </div>
+
+  <!-- ── 9b. Assistance Requested ── -->
+  <div class="form-title">Assistance Requested</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="assistanceRequested">Assistance Requested <span class="req">*</span><span class="hint">Describe any assistance needed from higher or adjacent units</span></label>
+      <textarea id="assistanceRequested" placeholder="e.g. None at this time, Request JAG support, Request behavioral health consultation..."></textarea>
     </div>
   </div>
 
@@ -706,8 +720,9 @@ function validate() {
   let ok = true;
   const required = [
     'dtg','ccirNum','location','description','cmdActions',
+    'assistanceRequested',
     'smOnPost','chaplain','weaponAccess','barrAssess',
-    'medAccess','highRisk','pendingSep','maritalStatus','deployed',
+    'medAccess','highRisk','pendingSep','maritalStatus','deployed','alcohol','drugs',
     'subName','subRank','subUnit','subDuty'
   ];
   required.forEach(id => { if (!req(id)) { markInvalid(id); ok = false; } });
@@ -743,10 +758,13 @@ function generateReport() {
   const hr = '─'.repeat(60);
   const garrison = garrisonValue();
 
-  lines.push('UNCLASSIFIED');
-  lines.push(hr);
-  lines.push('V CORPS CCIR REPORT');
-  lines.push(hr);
+  lines.push(`CCIR ${radio('category')} ${val('ccirNum')} ${val('dtg')} ${val('cmdLevel')}`);
+  lines.push('');
+  lines.push(`Initial Report: ${radio('category')} ${val('ccirNum')}`);
+  lines.push(`Commander's Actions: ${val('cmdActions').split('\n').join(' ')}`);
+  lines.push(`Assistance Requested: ${val('assistanceRequested').split('\n').join(' ')}`);
+  lines.push(`Alcohol: ${val('alcohol')}`);
+  lines.push(`Drugs: ${val('drugs')}`);
   lines.push('');
   lines.push(`1.  DTG: ${val('dtg')}`);
   lines.push('');
@@ -767,38 +785,33 @@ function generateReport() {
   val('cmdActions').split('\n').forEach(l => lines.push(`    ${l}`));
   lines.push('');
   lines.push('9.  OTHER COMMAND CONSIDERATIONS:');
-  lines.push(`    a. SMs live on or off post:           ${val('smOnPost')}`);
-  lines.push(`    b. Chaplain visit:                    ${val('chaplain')}`);
-  lines.push(`    c. SM access to weapons:              ${val('weaponAccess')}`);
-  lines.push(`    d. Home/barracks assessment:          ${val('barrAssess')}`);
-  lines.push(`    e. CoC assessed medication access:    ${val('medAccess')}`);
-  lines.push(`    f. SM high-risk:                      ${val('highRisk')}`);
-  lines.push(`    g. SM pending separation:             ${val('pendingSep')}`);
-  lines.push(`    h. SM marital status:                 ${val('maritalStatus')}`);
-  lines.push(`    i. Deployed within last 12 months:    ${val('deployed')}`);
-  if (val('unitActions').trim()) {
-    lines.push('    j. Unit actions:');
-    val('unitActions').split('\n').forEach(l => lines.push(`       ${l}`));
-  }
+  lines.push(`    a. SMs live on or off post: ${val('smOnPost')}`);
+  lines.push(`    b. Chaplain visit: ${val('chaplain')}`);
+  lines.push(`    c. SM access to weapons: ${val('weaponAccess')}`);
+  lines.push(`    d. Home/barracks assessment: ${val('barrAssess')}`);
+  lines.push(`    e. CoC assessed medication access: ${val('medAccess')}`);
+  lines.push(`    f. SM high-risk: ${val('highRisk')}`);
+  lines.push(`    g. SM pending separation: ${val('pendingSep')}`);
+  lines.push(`    h. SM marital status: ${val('maritalStatus')}`);
+  lines.push(`    i. Deployed within last 12 months: ${val('deployed')}`);
+  lines.push(`    j. Alcohol: ${val('alcohol')}`);
+  lines.push(`    k. Drugs: ${val('drugs')}`);
   lines.push('');
   lines.push('10. NOTIFICATION:');
   NOTIF_ROWS.forEach(r => {
     const dtg = val('notif' + r.id) || 'NOT NOTIFIED';
     const chk = document.getElementById('chk' + r.id).checked;
     const status = chk ? `NOTIFIED — ${dtg}` : dtg === 'NOT NOTIFIED' ? 'NOT NOTIFIED' : dtg;
-    lines.push(`    ${r.label.padEnd(42)} ${status}`);
+    lines.push(`    ${r.label}: ${status}`);
   });
   lines.push('');
   lines.push('11. SUBMITTED BY:');
-  lines.push(`    Name:           ${val('subName')}`);
-  lines.push(`    Rank:           ${val('subRank')}`);
-  lines.push(`    Unit:           ${val('subUnit')}`);
-  lines.push(`    Duty Position:  ${val('subDuty')}`);
+  lines.push(`    Name: ${val('subName')}`);
+  lines.push(`    Rank: ${val('subRank')}`);
+  lines.push(`    Unit: ${val('subUnit')}`);
+  lines.push(`    Duty Position: ${val('subDuty')}`);
   lines.push('');
   lines.push(`12. GARRISON: ${garrison}`);
-  lines.push('');
-  lines.push(hr);
-  lines.push('UNCLASSIFIED');
 
   const text = lines.join('\n');
   document.getElementById('reportOutput').value = text;
@@ -946,7 +959,11 @@ function downloadPDF() {
   doc.setFillColor(27,58,120);
   doc.setDrawColor(...WHITE);
   doc.setLineWidth(1);
-  doc.polygon(pts.map(p=>p[0]), pts.map(p=>p[1]), 'FD');
+  const deltas = [];
+  for (let i = 1; i < pts.length; i++) {
+    deltas.push([pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]]);
+  }
+  doc.lines(deltas, pts[0][0], pts[0][1], [1, 1], 'FD', true);
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(13);
@@ -990,7 +1007,8 @@ function downloadPDF() {
   field('SM pending separation',      val('pendingSep'),     8);
   field('SM marital status',          val('maritalStatus'),  8);
   field('Deployed last 12 months',    val('deployed'),       8);
-  if (val('unitActions').trim()) multilineField('Unit actions', val('unitActions'), 8);
+  field('Alcohol',                    val('alcohol'),        8);
+  field('Drugs',                      val('drugs'),          8);
 
   sectionHeader('10. Notification');
   NOTIF_ROWS.forEach(r => {
