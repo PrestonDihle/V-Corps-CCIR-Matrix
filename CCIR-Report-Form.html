@@ -949,7 +949,7 @@ function downloadPDF() {
   doc.setFillColor(27,58,120);
   doc.setDrawColor(...WHITE);
   doc.setLineWidth(1);
-  doc.polygon(pts.map(p=>p[0]), pts.map(p=>p[1]), 'FD');
+  doc.polygon(pts.map(p => ({x: p[0], y: p[1]})), 'FD');
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(13);
