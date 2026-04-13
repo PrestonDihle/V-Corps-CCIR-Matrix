@@ -946,7 +946,11 @@ function downloadPDF() {
   doc.setFillColor(27,58,120);
   doc.setDrawColor(...WHITE);
   doc.setLineWidth(1);
-  doc.polygon(pts.map(p=>p[0]), pts.map(p=>p[1]), 'FD');
+  const deltas = [];
+  for (let i = 1; i < pts.length; i++) {
+    deltas.push([pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]]);
+  }
+  doc.lines(deltas, pts[0][0], pts[0][1], [1, 1], 'FD', true);
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(13);
