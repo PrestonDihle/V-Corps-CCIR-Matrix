@@ -337,6 +337,10 @@
   <div class="form-title">7. Description of Incident</div>
   <div class="form-section">
     <div class="field-group">
+      <label for="incidentTitle">Incident Title <span class="req">*</span><span class="hint">Brief title for the incident</span></label>
+      <input type="text" id="incidentTitle" placeholder="e.g. Soldier suicide attempt, Off-post DUI" autocomplete="off">
+    </div>
+    <div class="field-group">
       <label for="description">Incident Description <span class="req">*</span><span class="hint">Include 5 Ws — clearly discern confirmed facts from unconfirmed assumptions</span></label>
       <textarea id="description" class="tall" placeholder="CONFIRMED: ...&#10;UNCONFIRMED/ASSUMED: ...&#10;&#10;WHAT: &#10;WHERE: &#10;WHO: &#10;WHEN: &#10;WHY/CAUSE:"></textarea>
     </div>
@@ -472,6 +476,15 @@
     <div class="field-group" style="margin-top:14px">
       <label for="unitActions">Actions by unit if necessary?<span class="hint"> (optional)</span></label>
       <textarea id="unitActions" placeholder="Describe any additional unit actions..."></textarea>
+    </div>
+  </div>
+
+  <!-- ── 9b. Assistance Requested ── -->
+  <div class="form-title">Assistance Requested</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="assistanceRequested">Assistance Requested <span class="req">*</span><span class="hint">Describe any assistance needed from higher or adjacent units</span></label>
+      <textarea id="assistanceRequested" placeholder="e.g. None at this time, Request JAG support, Request behavioral health consultation..."></textarea>
     </div>
   </div>
 
@@ -713,7 +726,8 @@ function validate() {
   clearInvalid();
   let ok = true;
   const required = [
-    'dtg','ccirNum','location','description','cmdActions',
+    'dtg','ccirNum','incidentTitle','location','description','cmdActions',
+    'assistanceRequested',
     'smOnPost','chaplain','weaponAccess','barrAssess',
     'medAccess','highRisk','pendingSep','maritalStatus','deployed','alcohol','drugs',
     'subName','subRank','subUnit','subDuty'
@@ -752,6 +766,12 @@ function generateReport() {
   const garrison = garrisonValue();
 
   lines.push(`CCIR ${radio('category')} ${val('ccirNum')} ${val('dtg')} ${val('cmdLevel')}`);
+  lines.push('');
+  lines.push(`**Initial Report**: ${radio('category')} ${val('ccirNum')} - ${val('incidentTitle')}`);
+  lines.push(`**Commander's Actions**: ${val('cmdActions').split('\n').join(' ')}`);
+  lines.push(`**Assistance Requested**: ${val('assistanceRequested').split('\n').join(' ')}`);
+  lines.push(`**Alcohol**: ${val('alcohol')}`);
+  lines.push(`**Drugs**: ${val('drugs')}`);
   lines.push('');
   lines.push(`1.  DTG: ${val('dtg')}`);
   lines.push('');
