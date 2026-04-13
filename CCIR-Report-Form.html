@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>V Corps CCIR — Submit Report</title>
+<style>
+  :root {
+    --army-dark:  #2d3a1e;
+    --army-green: #4a5c3a;
+    --army-tan:   #c8b87a;
+    --army-light: #f0ece0;
+    --bg:         #eae6da;
+    --card-bg:    #ffffff;
+    --border:     #c8b87a;
+    --c-red:      #a93226;
+    --c-amber:    #d68910;
+    --c-green:    #1e8449;
+    --text:       #1a1a1a;
+    --subtext:    #555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 15px;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* HEADER */
+  .unclass-strip {
+    background: #27ae60;
+    color: #fff;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    padding: 4px 0;
+  }
+  .top-bar {
+    background: var(--army-dark);
+    border-bottom: 3px solid var(--army-tan);
+    padding: 10px 16px 10px;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-text h1 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .header-text p {
+    font-size: 10px;
+    color: #b8c8a0;
+    margin-top: 2px;
+  }
+  .back-btn {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.12);
+    color: #d4e8b0;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: .4px;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* FORM WRAPPER */
+  .form-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px 14px 40px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--army-dark);
+    background: var(--army-light);
+    border: 1px solid var(--border);
+    border-radius: 6px 6px 0 0;
+    padding: 10px 14px;
+    margin-top: 14px;
+    border-bottom: 2px solid var(--army-tan);
+  }
+
+  .form-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 14px 14px 16px;
+    margin-bottom: 14px;
+  }
+
+  .field-group {
+    margin-bottom: 14px;
+  }
+  .field-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--army-dark);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 5px;
+  }
+  label .req {
+    color: var(--c-red);
+    font-size: 13px;
+    margin-left: 2px;
+  }
+  label .hint {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--subtext);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+
+  input[type=text], input[type=datetime-local], select, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fdfcf8;
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+  }
+  input[type=text]:focus, input[type=datetime-local]:focus, select:focus, textarea:focus {
+    border-color: var(--army-green);
+    background: #fff;
+  }
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  textarea.tall { min-height: 130px; }
+  select { cursor: pointer; }
+
+  /* Radio/checkbox groups */
+  .radio-group, .check-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+  }
+  .radio-group label, .check-row label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    background: #f4f1e8;
+    border: 1.5px solid #ddd;
+    border-radius: 20px;
+    padding: 5px 13px;
+    transition: background .12s, border-color .12s;
+    user-select: none;
+  }
+  .radio-group input, .check-row input { display: none; }
+  .radio-group label:has(input:checked),
+  .check-row label:has(input:checked) {
+    background: var(--army-green);
+    color: #fff;
+    border-color: var(--army-dark);
+  }
+
+  /* Sub-considerations grid */
+  .consid-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  @media (min-width: 540px) {
+    .consid-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .consid-item label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  /* Notification table */
+  .notif-table { width: 100%; border-collapse: collapse; }
+  .notif-table th {
+    background: var(--army-dark);
+    color: #e8e0c0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 7px 10px;
+    text-align: left;
+    font-weight: 700;
+  }
+  .notif-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e8e4d8;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .notif-table tr:last-child td { border-bottom: none; }
+  .notif-table tr:nth-child(even) td { background: #fafaf7; }
+  .notif-table td:first-child { font-weight: 600; color: var(--army-dark); }
+  .notif-table input[type=text] {
+    padding: 6px 9px;
+    font-size: 13px;
+    min-width: 120px;
+    width: 100%;
+    max-width: 220px;
+  }
+  .notif-mandatory {
+    font-size: 10px;
+    color: var(--c-red);
+    font-weight: 700;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ACTION BUTTONS */
+  .action-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--army-dark);
+    border-top: 3px solid var(--army-tan);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0));
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+  .btn {
+    flex: 1;
+    min-width: 130px;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: filter .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-generate { background: var(--army-green); color: #fff; }
+  .btn-generate:hover { filter: brightness(1.15); }
+  .btn-copy { background: var(--army-tan); color: var(--army-dark); }
+  .btn-copy:hover { filter: brightness(1.1); }
+  .btn-email { background: #2471a3; color: #fff; }
+  .btn-email:hover { filter: brightness(1.15); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
+
+  /* OUTPUT PREVIEW */
+  .output-wrap {
+    display: none;
+    max-width: 800px;
+    margin: 0 auto 0;
+    padding: 0 14px 16px;
+  }
+  .output-wrap.show { display: block; }
+  .output-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--army-dark);
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  #reportOutput {
+    width: 100%;
+    min-height: 220px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    background: #1a1a1a;
+    color: #d4e8b0;
+    border: 2px solid var(--army-tan);
+    border-radius: 6px;
+    padding: 14px;
+    resize: vertical;
+    white-space: pre-wrap;
+  }
+  .copy-toast {
+    display: none;
+    background: var(--c-green);
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+  .copy-toast.show { display: block; }
+
+  /* Validation */
+  input.invalid, select.invalid, textarea.invalid {
+    border-color: var(--c-red) !important;
+    background: #fff5f5 !important;
+  }
+  .validation-msg {
+    display: none;
+    background: #fdecea;
+    border: 1px solid var(--c-red);
+    border-radius: 6px;
+    color: var(--c-red);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 14px;
+    margin: 10px 14px 0;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .validation-msg.show { display: block; }
+
+  @media (max-width: 480px) {
+    .btn { min-width: 100%; }
+    .notif-table td:first-child { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="unclass-strip">UNCLASSIFIED</div>
+<div class="top-bar">
+  <div class="header-row">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="40" height="40" aria-label="V Corps patch" style="flex-shrink:0">
+      <polygon points="50,3 97,36.5 79,97 21,97 3,36.5" fill="#1b3a78" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="50"  y1="3"    x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="97"  y1="36.5" x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="79"  y1="97"   x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="21"  y1="97"   x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+      <line x1="3"   y1="36.5" x2="50" y2="53" stroke="white" stroke-width="2.8"/>
+    </svg>
+    <div class="header-text">
+      <h1>V Corps CCIR — Submit Report</h1>
+      <p>Complete all mandatory fields, then Generate, Copy or Email</p>
+    </div>
+  </div>
+  <a href="index.html" class="back-btn">&#8592; Back to Matrix</a>
+</div>
+
+<div id="validationMsg" class="validation-msg">Please complete all required fields before generating the report.</div>
+
+<div class="form-wrap">
+
+  <!-- ── 1. DTG ── -->
+  <div class="form-title">1. Date Time Group (DTG) of This Report</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="dtg">DTG <span class="req">*</span><span class="hint">e.g. 131430Z APR 2026</span></label>
+      <input type="text" id="dtg" placeholder="DDHHmmZ MMM YYYY" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ── 2 & 3. CCIR Category ── -->
+  <div class="form-title">2 &amp; 3. CCIR Category &amp; Category Number</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label>CCIR Category <span class="req">*</span></label>
+      <div class="radio-group" id="ccirCategory">
+        <label><input type="radio" name="category" value="Immediate"> Immediate</label>
+        <label><input type="radio" name="category" value="Priority"> Priority</label>
+        <label><input type="radio" name="category" value="Routine"> Routine</label>
+      </div>
+    </div>
+    <div class="field-group">
+      <label for="ccirNum">CCIR Category Number <span class="req">*</span><span class="hint">e.g. GEN-12</span></label>
+      <input type="text" id="ccirNum" placeholder="e.g. GEN-12" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ── 4. Type of Report ── -->
+  <div class="form-title">4. Type of Report</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label>Report Type <span class="req">*</span></label>
+      <div class="radio-group" id="reportType">
+        <label><input type="radio" name="reportType" value="Initial"> Initial</label>
+        <label><input type="radio" name="reportType" value="Follow Up"> Follow Up</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. Reporting Command ── -->
+  <div class="form-title">5. Reporting Command</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label>Command Level <span class="req">*</span></label>
+      <div class="radio-group" id="cmdLevel">
+        <label><input type="radio" name="cmdLevel" value="Company"> Company</label>
+        <label><input type="radio" name="cmdLevel" value="BN"> BN</label>
+        <label><input type="radio" name="cmdLevel" value="BDE"> BDE</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. Location ── -->
+  <div class="form-title">6. Location of Incident</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="location">Location <span class="req">*</span><span class="hint">Grid, address, or named location</span></label>
+      <input type="text" id="location" placeholder="Grid coordinates, address, or named location" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ── 7. Description ── -->
+  <div class="form-title">7. Description of Incident</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="description">Incident Description <span class="req">*</span><span class="hint">Include 5 Ws — clearly discern confirmed facts from unconfirmed assumptions: what happened, specific location, personnel involved, timeline/chain of events, proximate cause (if known) or suspected cause</span></label>
+      <textarea id="description" class="tall" placeholder="CONFIRMED: ...&#10;UNCONFIRMED/ASSUMED: ...&#10;&#10;WHAT: &#10;WHERE: &#10;WHO: &#10;WHEN: &#10;WHY/CAUSE:"></textarea>
+    </div>
+  </div>
+
+  <!-- ── 8. Command Actions ── -->
+  <div class="form-title">8. Command Actions Taken</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="cmdActions">Actions Taken <span class="req">*</span><span class="hint">Describe actions initiated to manage/mitigate the incident — include planned or scheduled responses</span></label>
+      <textarea id="cmdActions" placeholder="Actions taken or planned by the command..."></textarea>
+    </div>
+  </div>
+
+  <!-- ── 9. Other Command Considerations ── -->
+  <div class="form-title">9. Other Command Considerations</div>
+  <div class="form-section">
+    <div class="consid-grid">
+
+      <div class="consid-item">
+        <label>Do the SMs live on or off post? <span class="req">*</span></label>
+        <select id="smOnPost">
+          <option value="">— Select —</option>
+          <option>On Post</option>
+          <option>Off Post</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>When will the Chaplain visit? <span class="req">*</span></label>
+        <select id="chaplain">
+          <option value="">— Select —</option>
+          <option>Yes — Scheduled</option>
+          <option>No</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>SM access to weapons? <span class="req">*</span></label>
+        <select id="weaponAccess">
+          <option value="">— Select —</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>Home/barracks assessment? <span class="req">*</span><span class="hint"> (time completed, in progress, or future time)</span></label>
+        <input type="text" id="barrAssess" placeholder="e.g. Completed 1430Z, In Progress, 1600Z">
+      </div>
+
+      <div class="consid-item">
+        <label>CoC assessed SM's medication access? <span class="req">*</span></label>
+        <select id="medAccess">
+          <option value="">— Select —</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>Is the SM high-risk? <span class="req">*</span></label>
+        <select id="highRisk">
+          <option value="">— Select —</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>Is the SM pending separation? <span class="req">*</span></label>
+        <select id="pendingSep">
+          <option value="">— Select —</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>N/A</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>SM marital status? <span class="req">*</span></label>
+        <select id="maritalStatus">
+          <option value="">— Select —</option>
+          <option>Single</option>
+          <option>Married</option>
+          <option>Separated</option>
+        </select>
+      </div>
+
+      <div class="consid-item">
+        <label>SM deployed within last 12 months? <span class="req">*</span></label>
+        <select id="deployed">
+          <option value="">— Select —</option>
+          <option>Has been deployed within last 12 months</option>
+          <option>Has NOT been deployed within last 12 months</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="field-group" style="margin-top:14px">
+      <label for="unitActions">Actions by unit if necessary?<span class="hint"> (optional)</span></label>
+      <textarea id="unitActions" placeholder="Describe any additional unit actions..."></textarea>
+    </div>
+  </div>
+
+  <!-- ── 10. Notification ── -->
+  <div class="form-title">10. Notification</div>
+  <div class="form-section" style="padding: 0; overflow: hidden; border-radius: 0 0 6px 6px;">
+    <table class="notif-table">
+      <thead>
+        <tr>
+          <th>Notified Element</th>
+          <th>Time Notified (DTG)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            Commanding General, USAREUR
+            <span class="notif-mandatory">Mandatory for ALL Immediate CCIR</span>
+          </td>
+          <td><input type="text" id="notifCG" placeholder="DDHHmmZ MMM YYYY"></td>
+        </tr>
+        <tr>
+          <td>Emergency Services</td>
+          <td><input type="text" id="notifES" placeholder="DDHHmmZ MMM YYYY"></td>
+        </tr>
+        <tr>
+          <td>Garrison Provost Marshal</td>
+          <td><input type="text" id="notifPM" placeholder="DDHHmmZ MMM YYYY"></td>
+        </tr>
+        <tr>
+          <td>USAREUR G1 / Casualty Assistance Center</td>
+          <td><input type="text" id="notifG1" placeholder="DDHHmmZ MMM YYYY"></td>
+        </tr>
+        <tr>
+          <td>USAREUR Safety Office</td>
+          <td><input type="text" id="notifSafety" placeholder="DDHHmmZ MMM YYYY"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 11. Submitter Info ── -->
+  <div class="form-title">11. Individual Submitting Report</div>
+  <div class="form-section">
+    <div class="consid-grid">
+      <div class="consid-item">
+        <label for="subName">Name <span class="req">*</span></label>
+        <input type="text" id="subName" placeholder="Last, First MI" autocomplete="name">
+      </div>
+      <div class="consid-item">
+        <label for="subRank">Rank <span class="req">*</span></label>
+        <input type="text" id="subRank" placeholder="e.g. CPT, SSG" autocomplete="off">
+      </div>
+      <div class="consid-item">
+        <label for="subUnit">Unit (MSC or BCT) <span class="req">*</span></label>
+        <input type="text" id="subUnit" placeholder="e.g. 1-12 CAV, 2BCT" autocomplete="off">
+      </div>
+      <div class="consid-item">
+        <label for="subDuty">Duty Position <span class="req">*</span></label>
+        <input type="text" id="subDuty" placeholder="e.g. Company Commander, S3" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 12. Garrison ── -->
+  <div class="form-title">12. Garrison</div>
+  <div class="form-section">
+    <div class="field-group">
+      <label for="garrison">Garrison <span class="req">*</span></label>
+      <input type="text" id="garrison" placeholder="e.g. Grafenwoehr, Wiesbaden, Ansbach" autocomplete="off">
+    </div>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<!-- OUTPUT -->
+<div class="output-wrap" id="outputWrap">
+  <div class="output-label">Generated Report Text</div>
+  <textarea id="reportOutput" readonly></textarea>
+  <div id="copyToast" class="copy-toast">&#10003; Copied to clipboard!</div>
+</div>
+
+<!-- STICKY ACTION BAR -->
+<div class="action-bar">
+  <button class="btn btn-generate" onclick="generateReport()">&#9998; Generate Report</button>
+  <button class="btn btn-copy" id="btnCopy" onclick="copyReport()" disabled>&#128203; Copy Text</button>
+  <button class="btn btn-email" id="btnEmail" onclick="emailReport()" disabled>&#9993; Email Report</button>
+</div>
+
+<script>
+// ─── HELPERS ───────────────────────────────────────────
+function val(id)    { return (document.getElementById(id)||{}).value||''; }
+function radio(nm)  { const el = document.querySelector(`input[name="${nm}"]:checked`); return el ? el.value : ''; }
+function req(id)    { return val(id).trim(); }
+function reqRadio(nm){ return radio(nm); }
+
+function markInvalid(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('invalid');
+}
+function clearInvalid() {
+  document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+}
+
+// ─── VALIDATE ──────────────────────────────────────────
+function validate() {
+  clearInvalid();
+  let ok = true;
+  const required = [
+    'dtg','ccirNum','location','description','cmdActions',
+    'smOnPost','chaplain','weaponAccess','barrAssess',
+    'medAccess','highRisk','pendingSep','maritalStatus','deployed',
+    'subName','subRank','subUnit','subDuty','garrison'
+  ];
+  required.forEach(id => {
+    if (!req(id)) { markInvalid(id); ok = false; }
+  });
+  if (!reqRadio('category'))   { document.getElementById('ccirCategory').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  if (!reqRadio('reportType')) { document.getElementById('reportType').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  if (!reqRadio('cmdLevel'))   { document.getElementById('cmdLevel').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  return ok;
+}
+
+// ─── GENERATE ──────────────────────────────────────────
+function generateReport() {
+  document.querySelectorAll('.radio-group label, #reportType label, #cmdLevel label').forEach(l => l.style.outline = '');
+  const msgEl = document.getElementById('validationMsg');
+  msgEl.classList.remove('show');
+
+  if (!validate()) {
+    msgEl.classList.add('show');
+    msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  const lines = [];
+  const hr = '─'.repeat(60);
+
+  lines.push('UNCLASSIFIED');
+  lines.push(hr);
+  lines.push('V CORPS CCIR REPORT');
+  lines.push(hr);
+  lines.push('');
+  lines.push(`1.  DTG: ${val('dtg')}`);
+  lines.push('');
+  lines.push(`2.  CCIR CATEGORY: ${radio('category')}`);
+  lines.push('');
+  lines.push(`3.  CCIR CATEGORY NUMBER: ${val('ccirNum')}`);
+  lines.push('');
+  lines.push(`4.  TYPE OF REPORT: ${radio('reportType')}`);
+  lines.push('');
+  lines.push(`5.  REPORTING COMMAND: ${radio('cmdLevel')}`);
+  lines.push('');
+  lines.push(`6.  LOCATION OF INCIDENT: ${val('location')}`);
+  lines.push('');
+  lines.push('7.  DESCRIPTION OF INCIDENT:');
+  val('description').split('\n').forEach(l => lines.push(`    ${l}`));
+  lines.push('');
+  lines.push('8.  COMMAND ACTIONS TAKEN:');
+  val('cmdActions').split('\n').forEach(l => lines.push(`    ${l}`));
+  lines.push('');
+  lines.push('9.  OTHER COMMAND CONSIDERATIONS:');
+  lines.push(`    a. SMs live on or off post:           ${val('smOnPost')}`);
+  lines.push(`    b. Chaplain visit:                    ${val('chaplain')}`);
+  lines.push(`    c. SM access to weapons:              ${val('weaponAccess')}`);
+  lines.push(`    d. Home/barracks assessment:          ${val('barrAssess')}`);
+  lines.push(`    e. CoC assessed medication access:    ${val('medAccess')}`);
+  lines.push(`    f. SM high-risk:                      ${val('highRisk')}`);
+  lines.push(`    g. SM pending separation:             ${val('pendingSep')}`);
+  lines.push(`    h. SM marital status:                 ${val('maritalStatus')}`);
+  lines.push(`    i. Deployed within last 12 months:    ${val('deployed')}`);
+  if (val('unitActions').trim()) {
+    lines.push('    j. Unit actions:');
+    val('unitActions').split('\n').forEach(l => lines.push(`       ${l}`));
+  }
+  lines.push('');
+  lines.push('10. NOTIFICATION:');
+  lines.push(`    CG USAREUR (Mandatory-Immediate CCIR): ${val('notifCG') || 'N/A'}`);
+  lines.push(`    Emergency Services:                    ${val('notifES') || 'N/A'}`);
+  lines.push(`    Garrison Provost Marshal:              ${val('notifPM') || 'N/A'}`);
+  lines.push(`    USAREUR G1/Casualty Assistance Ctr:   ${val('notifG1') || 'N/A'}`);
+  lines.push(`    USAREUR Safety Office:                 ${val('notifSafety') || 'N/A'}`);
+  lines.push('');
+  lines.push('11. SUBMITTED BY:');
+  lines.push(`    Name:           ${val('subName')}`);
+  lines.push(`    Rank:           ${val('subRank')}`);
+  lines.push(`    Unit:           ${val('subUnit')}`);
+  lines.push(`    Duty Position:  ${val('subDuty')}`);
+  lines.push('');
+  lines.push(`12. GARRISON: ${val('garrison')}`);
+  lines.push('');
+  lines.push(hr);
+  lines.push('UNCLASSIFIED');
+
+  const text = lines.join('\n');
+  document.getElementById('reportOutput').value = text;
+  document.getElementById('outputWrap').classList.add('show');
+  document.getElementById('btnCopy').disabled = false;
+  document.getElementById('btnEmail').disabled = false;
+  document.getElementById('outputWrap').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── COPY ───────────────────────────────────────────────
+async function copyReport() {
+  const text = document.getElementById('reportOutput').value;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    // fallback
+    const ta = document.getElementById('reportOutput');
+    ta.select();
+    document.execCommand('copy');
+  }
+  const toast = document.getElementById('copyToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ─── EMAIL ──────────────────────────────────────────────
+function emailReport() {
+  const text = document.getElementById('reportOutput').value;
+  if (!text) return;
+  const subject = encodeURIComponent(`V Corps CCIR Report — ${radio('category')} — ${val('dtg')}`);
+  const body = encodeURIComponent(text);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+</script>
+
+</body>
+</html>
