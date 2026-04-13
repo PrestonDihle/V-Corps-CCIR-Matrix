@@ -82,6 +82,19 @@
   }
   .btn-reset { background: var(--army-tan); color: var(--army-dark); }
   .btn-reset:hover { background: #b5a060; }
+  .btn-submit-row {
+    padding: 4px 10px;
+    background: #1e8449;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .12s;
+  }
+  .btn-submit-row:hover { background: #145a32; }
 
   /* ── STATS BAR ── */
   .stats-bar {
@@ -528,6 +541,7 @@
           <th onclick="sortTable(7)">COS</th>
           <th onclick="sortTable(8)">DCG</th>
           <th onclick="sortTable(9)">CG</th>
+          <th style="cursor:default">Report</th>
         </tr>
       </thead>
       <tbody id="ccirBody">
@@ -827,6 +841,9 @@ function renderTable(data) {
       <td style="text-align:center">${notifBadge(row.cos)}</td>
       <td style="text-align:center">${notifBadge(row.dcg)}</td>
       <td style="text-align:center">${notifBadge(row.cg)}</td>
+      <td style="text-align:center">
+        <button class="btn-submit-row" onclick="submitFromMatrix('${row.cat}','${row.num}','${row.urg}')">&#9998; Report</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -892,6 +909,14 @@ function quickFilter(type, val) {
   if (type === 'urg') { document.getElementById('urgFilter').value = val; }
   if (type === 'level') { document.getElementById('levelFilter').value = val; }
   applyFilters();
+}
+
+// ═══════════════════════════════════════════════════
+// SUBMIT FROM MATRIX (item 1)
+// ═══════════════════════════════════════════════════
+function submitFromMatrix(cat, num, urg) {
+  const params = new URLSearchParams({ cat, num, urg });
+  window.location.href = 'CCIR-Report-Form.html?' + params.toString();
 }
 
 // ═══════════════════════════════════════════════════

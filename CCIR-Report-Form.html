@@ -6,6 +6,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>V Corps CCIR — Submit Report</title>
+<!-- jsPDF for PDF generation (item 5) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --army-dark:  #2d3a1e;
@@ -44,233 +46,166 @@
     border-bottom: 3px solid var(--army-tan);
     padding: 10px 16px 10px;
   }
-  .header-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .header-row { display: flex; align-items: center; gap: 12px; }
   .header-text h1 {
-    font-size: 16px;
-    font-weight: 800;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: .8px;
+    font-size: 16px; font-weight: 800; color: #fff;
+    text-transform: uppercase; letter-spacing: .8px;
   }
-  .header-text p {
-    font-size: 10px;
-    color: #b8c8a0;
-    margin-top: 2px;
-  }
+  .header-text p { font-size: 10px; color: #b8c8a0; margin-top: 2px; }
   .back-btn {
     margin-top: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.12);
-    color: #d4e8b0;
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    letter-spacing: .4px;
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.12); color: #d4e8b0;
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+    padding: 5px 12px; font-size: 12px; font-weight: 700;
+    cursor: pointer; text-decoration: none; letter-spacing: .4px;
   }
   .back-btn:hover { background: rgba(255,255,255,0.2); }
 
-  /* FORM WRAPPER */
-  .form-wrap {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 16px 14px 40px;
+  /* PREFILL BANNER */
+  .prefill-banner {
+    display: none;
+    max-width: 800px; margin: 10px auto 0; padding: 0 14px;
   }
+  .prefill-banner.show { display: block; }
+  .prefill-inner {
+    background: #e8f5e9; border: 1.5px solid #2e7d32; border-radius: 7px;
+    padding: 10px 14px; font-size: 12px; color: #1b5e20; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* FORM WRAPPER */
+  .form-wrap { max-width: 800px; margin: 0 auto; padding: 16px 14px 40px; }
 
   .form-title {
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--army-dark);
-    background: var(--army-light);
-    border: 1px solid var(--border);
-    border-radius: 6px 6px 0 0;
-    padding: 10px 14px;
-    margin-top: 14px;
-    border-bottom: 2px solid var(--army-tan);
+    font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--army-dark); background: var(--army-light);
+    border: 1px solid var(--border); border-radius: 6px 6px 0 0;
+    padding: 10px 14px; margin-top: 14px; border-bottom: 2px solid var(--army-tan);
   }
-
   .form-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 6px 6px;
-    padding: 14px 14px 16px;
-    margin-bottom: 14px;
+    background: var(--card-bg); border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 6px 6px; padding: 14px 14px 16px; margin-bottom: 14px;
   }
-
-  .field-group {
-    margin-bottom: 14px;
-  }
+  .field-group { margin-bottom: 14px; }
   .field-group:last-child { margin-bottom: 0; }
 
   label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--army-dark);
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    margin-bottom: 5px;
+    display: block; font-size: 12px; font-weight: 700; color: var(--army-dark);
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px;
   }
-  label .req {
-    color: var(--c-red);
-    font-size: 13px;
-    margin-left: 2px;
-  }
+  label .req { color: var(--c-red); font-size: 13px; margin-left: 2px; }
   label .hint {
-    font-size: 10px;
-    font-weight: 400;
-    color: var(--subtext);
-    text-transform: none;
-    letter-spacing: 0;
-    margin-left: 4px;
+    font-size: 10px; font-weight: 400; color: var(--subtext);
+    text-transform: none; letter-spacing: 0; margin-left: 4px;
   }
 
   input[type=text], input[type=datetime-local], select, textarea {
-    width: 100%;
-    padding: 9px 11px;
-    border: 1.5px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text);
-    background: #fdfcf8;
-    outline: none;
-    transition: border-color .15s;
-    -webkit-appearance: none;
+    width: 100%; padding: 9px 11px; border: 1.5px solid #ccc;
+    border-radius: 6px; font-size: 14px; font-family: inherit; color: var(--text);
+    background: #fdfcf8; outline: none; transition: border-color .15s; -webkit-appearance: none;
   }
   input[type=text]:focus, input[type=datetime-local]:focus, select:focus, textarea:focus {
-    border-color: var(--army-green);
-    background: #fff;
+    border-color: var(--army-green); background: #fff;
   }
-  textarea {
-    min-height: 90px;
-    resize: vertical;
-    line-height: 1.5;
-  }
+  textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
   textarea.tall { min-height: 130px; }
   select { cursor: pointer; }
 
-  /* Radio/checkbox groups */
+  /* DTG row with auto-fill */
+  .dtg-row { display: flex; gap: 8px; align-items: flex-end; }
+  .dtg-row input { flex: 1; }
+  .dtg-now-btn {
+    white-space: nowrap; padding: 9px 12px; background: var(--army-green); color: #fff;
+    border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .dtg-now-btn:hover { filter: brightness(1.15); }
+
+  /* Radio/checkbox pill groups */
   .radio-group, .check-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 2px;
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px;
   }
   .radio-group label, .check-row label {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    background: #f4f1e8;
-    border: 1.5px solid #ddd;
-    border-radius: 20px;
-    padding: 5px 13px;
-    transition: background .12s, border-color .12s;
-    user-select: none;
+    font-size: 13px; font-weight: 600; text-transform: none; letter-spacing: 0;
+    color: var(--text); display: flex; align-items: center; gap: 5px;
+    cursor: pointer; background: #f4f1e8; border: 1.5px solid #ddd;
+    border-radius: 20px; padding: 5px 13px;
+    transition: background .12s, border-color .12s; user-select: none;
   }
   .radio-group input, .check-row input { display: none; }
   .radio-group label:has(input:checked),
   .check-row label:has(input:checked) {
-    background: var(--army-green);
-    color: #fff;
-    border-color: var(--army-dark);
+    background: var(--army-green); color: #fff; border-color: var(--army-dark);
   }
 
   /* Sub-considerations grid */
-  .consid-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 11px;
-  }
-  @media (min-width: 540px) {
-    .consid-grid { grid-template-columns: 1fr 1fr; }
-  }
-  .consid-item label {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
+  .consid-grid { display: grid; grid-template-columns: 1fr; gap: 11px; }
+  @media (min-width: 540px) { .consid-grid { grid-template-columns: 1fr 1fr; } }
+  .consid-item label { font-size: 11px; margin-bottom: 4px; }
 
-  /* Notification table */
+  /* Garrison "Other" */
+  #garrisonOtherWrap { display: none; margin-top: 6px; }
+
+  /* ── NOTIFICATION TABLE (item 3) ── */
   .notif-table { width: 100%; border-collapse: collapse; }
   .notif-table th {
-    background: var(--army-dark);
-    color: #e8e0c0;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    padding: 7px 10px;
-    text-align: left;
-    font-weight: 700;
+    background: var(--army-dark); color: #e8e0c0; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .5px; padding: 7px 10px;
+    text-align: left; font-weight: 700;
   }
   .notif-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #e8e4d8;
-    font-size: 13px;
-    vertical-align: middle;
+    padding: 8px 10px; border-bottom: 1px solid #e8e4d8;
+    font-size: 13px; vertical-align: top;
   }
   .notif-table tr:last-child td { border-bottom: none; }
   .notif-table tr:nth-child(even) td { background: #fafaf7; }
   .notif-table td:first-child { font-weight: 600; color: var(--army-dark); }
-  .notif-table input[type=text] {
-    padding: 6px 9px;
-    font-size: 13px;
-    min-width: 120px;
-    width: 100%;
-    max-width: 220px;
-  }
   .notif-mandatory {
-    font-size: 10px;
-    color: var(--c-red);
-    font-weight: 700;
-    display: block;
-    margin-top: 2px;
+    font-size: 10px; color: var(--c-red); font-weight: 700; display: block; margin-top: 2px;
+  }
+  .notif-cell { display: flex; flex-direction: column; gap: 6px; }
+  .notif-check-row { display: flex; gap: 8px; align-items: center; }
+  .notif-check-label {
+    display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    background: #f0f0f0; border: 1.5px solid #bbb; border-radius: 5px;
+    padding: 6px 11px; white-space: nowrap; user-select: none;
+    transition: background .12s; flex-shrink: 0;
+  }
+  .notif-check-label input[type=checkbox] { display: none; }
+  .notif-check-label.checked { background: var(--c-green); color: #fff; border-color: #145a32; }
+  .notif-dtg { font-size: 13px; flex: 1; min-width: 130px; }
+  .notif-picker-row {
+    display: none; flex-direction: column; gap: 4px;
+    background: #f8f4e8; border: 1px solid var(--army-tan);
+    border-radius: 6px; padding: 8px 10px; font-size: 11px;
+  }
+  .notif-picker-row.show { display: flex; }
+  .notif-picker-note {
+    font-size: 10px; font-weight: 700; color: #7a6020;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+  .notif-picker-inner { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .notif-picker-inner input[type=datetime-local] {
+    flex: 1; min-width: 180px; font-size: 13px; padding: 7px 9px;
+  }
+  .notif-convert-label {
+    font-size: 11px; color: var(--subtext); font-weight: 600; white-space: nowrap;
   }
 
   /* ACTION BUTTONS */
   .action-bar {
-    position: sticky;
-    bottom: 0;
-    background: var(--army-dark);
+    position: sticky; bottom: 0; background: var(--army-dark);
     border-top: 3px solid var(--army-tan);
     padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0));
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    z-index: 50;
+    display: flex; gap: 8px; flex-wrap: wrap; z-index: 50;
   }
   .btn {
-    flex: 1;
-    min-width: 130px;
-    padding: 12px 14px;
-    border: none;
-    border-radius: 7px;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    letter-spacing: .5px;
+    flex: 1; min-width: 120px; padding: 12px 10px; border: none; border-radius: 7px;
+    font-size: 13px; font-weight: 800; cursor: pointer; letter-spacing: .4px;
     transition: filter .15s, transform .1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .btn:active { transform: scale(.97); }
   .btn-generate { background: var(--army-green); color: #fff; }
@@ -279,76 +214,45 @@
   .btn-copy:hover { filter: brightness(1.1); }
   .btn-email { background: #2471a3; color: #fff; }
   .btn-email:hover { filter: brightness(1.15); }
+  .btn-pdf { background: #6c3483; color: #fff; }
+  .btn-pdf:hover { filter: brightness(1.15); }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
 
   /* OUTPUT PREVIEW */
-  .output-wrap {
-    display: none;
-    max-width: 800px;
-    margin: 0 auto 0;
-    padding: 0 14px 16px;
-  }
+  .output-wrap { display: none; max-width: 800px; margin: 0 auto 0; padding: 0 14px 16px; }
   .output-wrap.show { display: block; }
   .output-label {
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--army-dark);
-    margin-bottom: 6px;
-    margin-top: 14px;
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--army-dark); margin-bottom: 6px; margin-top: 14px;
   }
   #reportOutput {
-    width: 100%;
-    min-height: 220px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
-    line-height: 1.6;
-    background: #1a1a1a;
-    color: #d4e8b0;
-    border: 2px solid var(--army-tan);
-    border-radius: 6px;
-    padding: 14px;
-    resize: vertical;
-    white-space: pre-wrap;
+    width: 100%; min-height: 220px;
+    font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.6;
+    background: #1a1a1a; color: #d4e8b0; border: 2px solid var(--army-tan);
+    border-radius: 6px; padding: 14px; resize: vertical; white-space: pre-wrap;
   }
   .copy-toast {
-    display: none;
-    background: var(--c-green);
-    color: #fff;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 8px;
-    border-radius: 6px;
-    margin-top: 8px;
+    display: none; background: var(--c-green); color: #fff; text-align: center;
+    font-size: 13px; font-weight: 700; padding: 8px; border-radius: 6px; margin-top: 8px;
   }
   .copy-toast.show { display: block; }
 
   /* Validation */
   input.invalid, select.invalid, textarea.invalid {
-    border-color: var(--c-red) !important;
-    background: #fff5f5 !important;
+    border-color: var(--c-red) !important; background: #fff5f5 !important;
   }
   .validation-msg {
-    display: none;
-    background: #fdecea;
-    border: 1px solid var(--c-red);
-    border-radius: 6px;
-    color: var(--c-red);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 10px 14px;
-    margin: 10px 14px 0;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+    display: none; background: #fdecea; border: 1px solid var(--c-red);
+    border-radius: 6px; color: var(--c-red); font-size: 13px; font-weight: 600;
+    padding: 10px 14px; margin: 10px 14px 0;
+    max-width: 800px; margin-left: auto; margin-right: auto;
   }
   .validation-msg.show { display: block; }
 
   @media (max-width: 480px) {
-    .btn { min-width: 100%; }
+    .btn { min-width: calc(50% - 4px); }
     .notif-table td:first-child { font-size: 11px; }
+    .dtg-now-btn { font-size: 11px; padding: 9px 9px; }
   }
 </style>
 </head>
@@ -367,10 +271,17 @@
     </svg>
     <div class="header-text">
       <h1>V Corps CCIR — Submit Report</h1>
-      <p>Complete all mandatory fields, then Generate, Copy or Email</p>
+      <p>Complete all mandatory fields, then Generate, Copy, Email, or Download PDF</p>
     </div>
   </div>
   <a href="index.html" class="back-btn">&#8592; Back to Matrix</a>
+</div>
+
+<!-- Pre-fill notice (item 1) -->
+<div class="prefill-banner" id="prefillBanner">
+  <div class="prefill-inner">
+    &#9989; Fields 1–3 pre-filled from selected CCIR — review and complete remaining fields.
+  </div>
 </div>
 
 <div id="validationMsg" class="validation-msg">Please complete all required fields before generating the report.</div>
@@ -381,8 +292,11 @@
   <div class="form-title">1. Date Time Group (DTG) of This Report</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="dtg">DTG <span class="req">*</span><span class="hint">e.g. 131430Z APR 2026</span></label>
-      <input type="text" id="dtg" placeholder="DDHHmmZ MMM YYYY" autocomplete="off">
+      <label for="dtg">DTG <span class="req">*</span><span class="hint">e.g. 131430Z APR 2026 — click "Now (Zulu)" to auto-fill</span></label>
+      <div class="dtg-row">
+        <input type="text" id="dtg" placeholder="DDHHmmZ MMM YYYY" autocomplete="off">
+        <button class="dtg-now-btn" type="button" onclick="fillDTGNow()">&#128336; Now (Zulu)</button>
+      </div>
     </div>
   </div>
 
@@ -398,7 +312,7 @@
       </div>
     </div>
     <div class="field-group">
-      <label for="ccirNum">CCIR Category Number <span class="req">*</span><span class="hint">e.g. GEN-12</span></label>
+      <label for="ccirNum">CCIR Category Number <span class="req">*</span><span class="hint">e.g. GEN-12, SPOT-11</span></label>
       <input type="text" id="ccirNum" placeholder="e.g. GEN-12" autocomplete="off">
     </div>
   </div>
@@ -441,7 +355,7 @@
   <div class="form-title">7. Description of Incident</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="description">Incident Description <span class="req">*</span><span class="hint">Include 5 Ws — clearly discern confirmed facts from unconfirmed assumptions: what happened, specific location, personnel involved, timeline/chain of events, proximate cause (if known) or suspected cause</span></label>
+      <label for="description">Incident Description <span class="req">*</span><span class="hint">Include 5 Ws — clearly discern confirmed facts from unconfirmed assumptions</span></label>
       <textarea id="description" class="tall" placeholder="CONFIRMED: ...&#10;UNCONFIRMED/ASSUMED: ...&#10;&#10;WHAT: &#10;WHERE: &#10;WHO: &#10;WHEN: &#10;WHY/CAUSE:"></textarea>
     </div>
   </div>
@@ -450,7 +364,7 @@
   <div class="form-title">8. Command Actions Taken</div>
   <div class="form-section">
     <div class="field-group">
-      <label for="cmdActions">Actions Taken <span class="req">*</span><span class="hint">Describe actions initiated to manage/mitigate the incident — include planned or scheduled responses</span></label>
+      <label for="cmdActions">Actions Taken <span class="req">*</span><span class="hint">Include planned or scheduled responses</span></label>
       <textarea id="cmdActions" placeholder="Actions taken or planned by the command..."></textarea>
     </div>
   </div>
@@ -480,17 +394,19 @@
         </select>
       </div>
 
+      <!-- item 2: added N/A -->
       <div class="consid-item">
         <label>SM access to weapons? <span class="req">*</span></label>
         <select id="weaponAccess">
           <option value="">— Select —</option>
           <option>Yes</option>
           <option>No</option>
+          <option>N/A</option>
         </select>
       </div>
 
       <div class="consid-item">
-        <label>Home/barracks assessment? <span class="req">*</span><span class="hint"> (time completed, in progress, or future time)</span></label>
+        <label>Home/barracks assessment? <span class="req">*</span><span class="hint"> (completed, in progress, future time)</span></label>
         <input type="text" id="barrAssess" placeholder="e.g. Completed 1430Z, In Progress, 1600Z">
       </div>
 
@@ -524,6 +440,7 @@
         </select>
       </div>
 
+      <!-- item 2: added N/A -->
       <div class="consid-item">
         <label>SM marital status? <span class="req">*</span></label>
         <select id="maritalStatus">
@@ -531,15 +448,18 @@
           <option>Single</option>
           <option>Married</option>
           <option>Separated</option>
+          <option>N/A</option>
         </select>
       </div>
 
+      <!-- item 2: added N/A -->
       <div class="consid-item">
         <label>SM deployed within last 12 months? <span class="req">*</span></label>
         <select id="deployed">
           <option value="">— Select —</option>
           <option>Has been deployed within last 12 months</option>
           <option>Has NOT been deployed within last 12 months</option>
+          <option>N/A</option>
         </select>
       </div>
 
@@ -551,40 +471,21 @@
     </div>
   </div>
 
-  <!-- ── 10. Notification ── -->
+  <!-- ── 10. Notification (item 3) ── -->
   <div class="form-title">10. Notification</div>
   <div class="form-section" style="padding: 0; overflow: hidden; border-radius: 0 0 6px 6px;">
+    <div style="background:#fef9ec;border-bottom:1px solid var(--army-tan);padding:8px 12px;font-size:11px;color:#7a6020;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">
+      &#9432; Check "Notified" to auto-stamp current Zulu time. Use the date/time picker below each row to select local time — it will be <strong>automatically converted to Zulu (UTC)</strong>.
+    </div>
     <table class="notif-table">
       <thead>
         <tr>
-          <th>Notified Element</th>
-          <th>Time Notified (DTG)</th>
+          <th style="width:42%">Notified Element</th>
+          <th>Notified / Time (Zulu)</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>
-            Commanding General, USAREUR
-            <span class="notif-mandatory">Mandatory for ALL Immediate CCIR</span>
-          </td>
-          <td><input type="text" id="notifCG" placeholder="DDHHmmZ MMM YYYY"></td>
-        </tr>
-        <tr>
-          <td>Emergency Services</td>
-          <td><input type="text" id="notifES" placeholder="DDHHmmZ MMM YYYY"></td>
-        </tr>
-        <tr>
-          <td>Garrison Provost Marshal</td>
-          <td><input type="text" id="notifPM" placeholder="DDHHmmZ MMM YYYY"></td>
-        </tr>
-        <tr>
-          <td>USAREUR G1 / Casualty Assistance Center</td>
-          <td><input type="text" id="notifG1" placeholder="DDHHmmZ MMM YYYY"></td>
-        </tr>
-        <tr>
-          <td>USAREUR Safety Office</td>
-          <td><input type="text" id="notifSafety" placeholder="DDHHmmZ MMM YYYY"></td>
-        </tr>
+      <tbody id="notifBody">
+        <!-- Rows injected by JS -->
       </tbody>
     </table>
   </div>
@@ -612,12 +513,23 @@
     </div>
   </div>
 
-  <!-- ── 12. Garrison ── -->
+  <!-- ── 12. Garrison (item 4 — dropdown) ── -->
   <div class="form-title">12. Garrison</div>
   <div class="form-section">
     <div class="field-group">
       <label for="garrison">Garrison <span class="req">*</span></label>
-      <input type="text" id="garrison" placeholder="e.g. Grafenwoehr, Wiesbaden, Ansbach" autocomplete="off">
+      <select id="garrison" onchange="toggleGarrisonOther()">
+        <option value="">— Select Garrison —</option>
+        <option value="Ansbach">Ansbach</option>
+        <option value="Wiesbaden">Wiesbaden</option>
+        <option value="Grafenwoehr">Grafenwoehr</option>
+        <option value="Vilseck">Vilseck</option>
+        <option value="Hohenfels">Hohenfels</option>
+        <option value="Other">Other (specify)</option>
+      </select>
+      <div id="garrisonOtherWrap">
+        <input type="text" id="garrisonOther" placeholder="Enter garrison name">
+      </div>
     </div>
   </div>
 
@@ -632,17 +544,155 @@
 
 <!-- STICKY ACTION BAR -->
 <div class="action-bar">
-  <button class="btn btn-generate" onclick="generateReport()">&#9998; Generate Report</button>
-  <button class="btn btn-copy" id="btnCopy" onclick="copyReport()" disabled>&#128203; Copy Text</button>
-  <button class="btn btn-email" id="btnEmail" onclick="emailReport()" disabled>&#9993; Email Report</button>
+  <button class="btn btn-generate" onclick="generateReport()">&#9998; Generate</button>
+  <button class="btn btn-copy" id="btnCopy" onclick="copyReport()" disabled>&#128203; Copy</button>
+  <button class="btn btn-email" id="btnEmail" onclick="emailReport()" disabled>&#9993; Email</button>
+  <button class="btn btn-pdf" id="btnPdf" onclick="downloadPDF()" disabled>&#128196; PDF</button>
 </div>
 
 <script>
-// ─── HELPERS ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// NOTIFICATION ROWS CONFIG
+// ═══════════════════════════════════════════════════
+const NOTIF_ROWS = [
+  { id:'CG',     label:'Commanding General, USAREUR', mandatory:true },
+  { id:'ES',     label:'Emergency Services',          mandatory:false },
+  { id:'PM',     label:'Garrison Provost Marshal',    mandatory:false },
+  { id:'G1',     label:'USAREUR G1 / Casualty Assistance Center', mandatory:false },
+  { id:'Safety', label:'USAREUR Safety Office',       mandatory:false },
+];
+
+function buildNotifRows() {
+  const tbody = document.getElementById('notifBody');
+  NOTIF_ROWS.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        ${r.label}
+        ${r.mandatory ? '<span class="notif-mandatory">Mandatory for ALL Immediate CCIR</span>' : ''}
+      </td>
+      <td>
+        <div class="notif-cell">
+          <div class="notif-check-row">
+            <label class="notif-check-label" id="lbl${r.id}" onclick="toggleNotif('${r.id}')">
+              <input type="checkbox" id="chk${r.id}">
+              &#10003; Notified
+            </label>
+            <input type="text" class="notif-dtg" id="notif${r.id}" placeholder="DDHHmmZ MMM YYYY">
+          </div>
+          <div class="notif-picker-row" id="picker${r.id}">
+            <span class="notif-picker-note">&#9888; Enter local date/time below — auto-converts to Zulu (UTC)</span>
+            <div class="notif-picker-inner">
+              <input type="datetime-local" id="dtPicker${r.id}" onchange="pickerToZulu('${r.id}')">
+              <span class="notif-convert-label">&#8594; Zulu</span>
+            </div>
+          </div>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ZULU / DTG HELPERS
+// ═══════════════════════════════════════════════════
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function toZuluDTG(date) {
+  const d = date.getUTCDate().toString().padStart(2,'0');
+  const h = date.getUTCHours().toString().padStart(2,'0');
+  const m = date.getUTCMinutes().toString().padStart(2,'0');
+  return `${d}${h}${m}Z ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+function fillDTGNow() {
+  document.getElementById('dtg').value = toZuluDTG(new Date());
+}
+
+// ═══════════════════════════════════════════════════
+// NOTIFICATION CHECKBOX + PICKER (item 3)
+// ═══════════════════════════════════════════════════
+function toggleNotif(id) {
+  const chk = document.getElementById('chk' + id);
+  const lbl = document.getElementById('lbl' + id);
+  const picker = document.getElementById('picker' + id);
+  const dtgField = document.getElementById('notif' + id);
+
+  chk.checked = !chk.checked;
+  if (chk.checked) {
+    lbl.classList.add('checked');
+    if (!dtgField.value) dtgField.value = toZuluDTG(new Date());
+    picker.classList.add('show');
+  } else {
+    lbl.classList.remove('checked');
+    picker.classList.remove('show');
+  }
+}
+
+function pickerToZulu(id) {
+  const localVal = document.getElementById('dtPicker' + id).value;
+  if (localVal) {
+    // datetime-local value is in local time; new Date() parses it as local
+    const d = new Date(localVal);
+    document.getElementById('notif' + id).value = toZuluDTG(d);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// GARRISON OTHER (item 4)
+// ═══════════════════════════════════════════════════
+function toggleGarrisonOther() {
+  const sel = document.getElementById('garrison').value;
+  document.getElementById('garrisonOtherWrap').style.display = sel === 'Other' ? 'block' : 'none';
+}
+
+function garrisonValue() {
+  const sel = document.getElementById('garrison').value;
+  if (sel === 'Other') return document.getElementById('garrisonOther').value.trim();
+  return sel;
+}
+
+// ═══════════════════════════════════════════════════
+// URL PARAM PRE-FILL (item 1)
+// ═══════════════════════════════════════════════════
+function urgToCategory(urg) {
+  if (urg === 'C') return 'Immediate';
+  if (urg === 'I') return 'Priority';
+  return 'Routine';
+}
+
+function prefillFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  const cat = p.get('cat');
+  const num = p.get('num');
+  const urg = p.get('urg');
+
+  if (!cat && !num) return;
+
+  // DTG — always stamp current Zulu
+  fillDTGNow();
+
+  // CCIR Number: CAT-NUM e.g. SPOT-11
+  if (cat && num) {
+    document.getElementById('ccirNum').value = `${cat}-${num}`;
+  }
+
+  // CCIR Category from urgency
+  if (urg) {
+    const catVal = urgToCategory(urg.toUpperCase());
+    const radio = document.querySelector(`input[name="category"][value="${catVal}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  document.getElementById('prefillBanner').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
 function val(id)    { return (document.getElementById(id)||{}).value||''; }
 function radio(nm)  { const el = document.querySelector(`input[name="${nm}"]:checked`); return el ? el.value : ''; }
 function req(id)    { return val(id).trim(); }
-function reqRadio(nm){ return radio(nm); }
 
 function markInvalid(id) {
   const el = document.getElementById(id);
@@ -652,7 +702,9 @@ function clearInvalid() {
   document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
 }
 
-// ─── VALIDATE ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// VALIDATE
+// ═══════════════════════════════════════════════════
 function validate() {
   clearInvalid();
   let ok = true;
@@ -660,18 +712,25 @@ function validate() {
     'dtg','ccirNum','location','description','cmdActions',
     'smOnPost','chaplain','weaponAccess','barrAssess',
     'medAccess','highRisk','pendingSep','maritalStatus','deployed',
-    'subName','subRank','subUnit','subDuty','garrison'
+    'subName','subRank','subUnit','subDuty'
   ];
-  required.forEach(id => {
-    if (!req(id)) { markInvalid(id); ok = false; }
-  });
-  if (!reqRadio('category'))   { document.getElementById('ccirCategory').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
-  if (!reqRadio('reportType')) { document.getElementById('reportType').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
-  if (!reqRadio('cmdLevel'))   { document.getElementById('cmdLevel').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  required.forEach(id => { if (!req(id)) { markInvalid(id); ok = false; } });
+
+  // Garrison
+  const garSel = document.getElementById('garrison').value;
+  if (!garSel) { markInvalid('garrison'); ok = false; }
+  else if (garSel === 'Other' && !req('garrisonOther')) { markInvalid('garrisonOther'); ok = false; }
+
+  // Radios
+  if (!radio('category'))   { document.getElementById('ccirCategory').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  if (!radio('reportType')) { document.getElementById('reportType').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  if (!radio('cmdLevel'))   { document.getElementById('cmdLevel').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
   return ok;
 }
 
-// ─── GENERATE ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// GENERATE TEXT REPORT
+// ═══════════════════════════════════════════════════
 function generateReport() {
   document.querySelectorAll('.radio-group label, #reportType label, #cmdLevel label').forEach(l => l.style.outline = '');
   const msgEl = document.getElementById('validationMsg');
@@ -679,12 +738,13 @@ function generateReport() {
 
   if (!validate()) {
     msgEl.classList.add('show');
-    msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    msgEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
     return;
   }
 
   const lines = [];
   const hr = '─'.repeat(60);
+  const garrison = garrisonValue();
 
   lines.push('UNCLASSIFIED');
   lines.push(hr);
@@ -725,11 +785,12 @@ function generateReport() {
   }
   lines.push('');
   lines.push('10. NOTIFICATION:');
-  lines.push(`    CG USAREUR (Mandatory-Immediate CCIR): ${val('notifCG') || 'N/A'}`);
-  lines.push(`    Emergency Services:                    ${val('notifES') || 'N/A'}`);
-  lines.push(`    Garrison Provost Marshal:              ${val('notifPM') || 'N/A'}`);
-  lines.push(`    USAREUR G1/Casualty Assistance Ctr:   ${val('notifG1') || 'N/A'}`);
-  lines.push(`    USAREUR Safety Office:                 ${val('notifSafety') || 'N/A'}`);
+  NOTIF_ROWS.forEach(r => {
+    const dtg = val('notif' + r.id) || 'NOT NOTIFIED';
+    const chk = document.getElementById('chk' + r.id).checked;
+    const status = chk ? `NOTIFIED — ${dtg}` : dtg === 'NOT NOTIFIED' ? 'NOT NOTIFIED' : dtg;
+    lines.push(`    ${r.label.padEnd(42)} ${status}`);
+  });
   lines.push('');
   lines.push('11. SUBMITTED BY:');
   lines.push(`    Name:           ${val('subName')}`);
@@ -737,7 +798,7 @@ function generateReport() {
   lines.push(`    Unit:           ${val('subUnit')}`);
   lines.push(`    Duty Position:  ${val('subDuty')}`);
   lines.push('');
-  lines.push(`12. GARRISON: ${val('garrison')}`);
+  lines.push(`12. GARRISON: ${garrison}`);
   lines.push('');
   lines.push(hr);
   lines.push('UNCLASSIFIED');
@@ -747,34 +808,236 @@ function generateReport() {
   document.getElementById('outputWrap').classList.add('show');
   document.getElementById('btnCopy').disabled = false;
   document.getElementById('btnEmail').disabled = false;
-  document.getElementById('outputWrap').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('btnPdf').disabled = false;
+  document.getElementById('outputWrap').scrollIntoView({ behavior:'smooth' });
 }
 
-// ─── COPY ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// COPY
+// ═══════════════════════════════════════════════════
 async function copyReport() {
   const text = document.getElementById('reportOutput').value;
   if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (e) {
-    // fallback
-    const ta = document.getElementById('reportOutput');
-    ta.select();
-    document.execCommand('copy');
-  }
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) { const ta = document.getElementById('reportOutput'); ta.select(); document.execCommand('copy'); }
   const toast = document.getElementById('copyToast');
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ─── EMAIL ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// EMAIL
+// ═══════════════════════════════════════════════════
 function emailReport() {
   const text = document.getElementById('reportOutput').value;
   if (!text) return;
-  const subject = encodeURIComponent(`V Corps CCIR Report — ${radio('category')} — ${val('dtg')}`);
+  const subject = encodeURIComponent(`V Corps CCIR Report — ${radio('category')} — ${val('ccirNum')} — ${val('dtg')}`);
   const body = encodeURIComponent(text);
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
+
+// ═══════════════════════════════════════════════════
+// DOWNLOAD PDF (item 5)
+// ═══════════════════════════════════════════════════
+function downloadPDF() {
+  if (!window.jspdf) { alert('PDF library still loading — please try again in a moment.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'letter' });
+  const garrison = garrisonValue();
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 50;
+  const colW = pageW - margin * 2;
+  let y = margin;
+
+  const ARMY_DARK  = [45, 58, 30];
+  const ARMY_TAN   = [200, 184, 122];
+  const ARMY_GREEN = [74, 92, 58];
+  const WHITE      = [255, 255, 255];
+  const BLACK      = [0, 0, 0];
+  const GREEN_BG   = [39, 174, 96];
+  const LIGHT_BG   = [240, 236, 224];
+
+  function checkPage(need) {
+    if (y + need > pageH - 40) {
+      doc.addPage();
+      y = margin;
+      drawPageHeader();
+    }
+  }
+
+  function drawPageHeader() {
+    // UNCLASSIFIED strip
+    doc.setFillColor(...GREEN_BG);
+    doc.rect(0, 0, pageW, 18, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...WHITE);
+    doc.text('UNCLASSIFIED', pageW/2, 12, {align:'center'});
+  }
+
+  function sectionHeader(title) {
+    checkPage(28);
+    doc.setFillColor(...ARMY_DARK);
+    doc.roundedRect(margin, y, colW, 20, 3, 3, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...ARMY_TAN);
+    doc.text(title.toUpperCase(), margin + 8, y + 13.5);
+    y += 26;
+  }
+
+  function field(label, value, indent) {
+    indent = indent || 0;
+    const x = margin + indent;
+    const w = colW - indent;
+    checkPage(16);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...ARMY_GREEN);
+    doc.text(label + ':', x, y);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(...BLACK);
+    const labelW = doc.getTextWidth(label + ':') + 5;
+    const valLines = doc.splitTextToSize(value || '—', w - labelW - 4);
+    doc.text(valLines, x + labelW + 4, y);
+    y += Math.max(14, valLines.length * 12);
+  }
+
+  function multilineField(label, value, indent) {
+    indent = indent || 0;
+    const x = margin + indent;
+    const w = colW - indent;
+    checkPage(20);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...ARMY_GREEN);
+    doc.text(label + ':', x, y);
+    y += 12;
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(...BLACK);
+    const lines = doc.splitTextToSize(value || '—', w);
+    lines.forEach(line => {
+      checkPage(12);
+      doc.text(line, x + 10, y);
+      y += 12;
+    });
+    y += 4;
+  }
+
+  function hr() {
+    doc.setDrawColor(...ARMY_TAN);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, margin + colW, y);
+    y += 6;
+  }
+
+  // ── DRAW ──
+  drawPageHeader();
+  y = 28;
+
+  // Title block
+  doc.setFillColor(...ARMY_DARK);
+  doc.rect(margin, y, colW, 50, 'F');
+  doc.setFillColor(...ARMY_TAN);
+  doc.rect(margin, y + 46, colW, 4, 'F');
+
+  // V Corps patch (simplified polygon)
+  const cx = margin + 30, cy = y + 25;
+  const pts = [[cx,cy-18],[cx+17,cy-6],[cx+11,cy+14],[cx-11,cy+14],[cx-17,cy-6]];
+  doc.setFillColor(27,58,120);
+  doc.setDrawColor(...WHITE);
+  doc.setLineWidth(1);
+  doc.polygon(pts.map(p=>p[0]), pts.map(p=>p[1]), 'FD');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...WHITE);
+  doc.text('V CORPS CCIR REPORT', margin + 55, y + 20);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...ARMY_TAN);
+  doc.text(`Generated: ${toZuluDTG(new Date())}  |  UNCLASSIFIED`, margin + 55, y + 35);
+  y += 60;
+
+  sectionHeader('1. Date Time Group (DTG)');
+  field('DTG', val('dtg'));
+
+  sectionHeader('2 & 3. CCIR Category & Number');
+  field('Category', radio('category'));
+  field('CCIR Number', val('ccirNum'));
+
+  sectionHeader('4. Type of Report');
+  field('Report Type', radio('reportType'));
+
+  sectionHeader('5. Reporting Command');
+  field('Command Level', radio('cmdLevel'));
+
+  sectionHeader('6. Location of Incident');
+  field('Location', val('location'));
+
+  sectionHeader('7. Description of Incident');
+  multilineField('Description', val('description'));
+
+  sectionHeader('8. Command Actions Taken');
+  multilineField('Actions', val('cmdActions'));
+
+  sectionHeader('9. Other Command Considerations');
+  field('SMs on/off post',           val('smOnPost'),       8);
+  field('Chaplain visit',             val('chaplain'),       8);
+  field('SM weapon access',           val('weaponAccess'),   8);
+  field('Home/barracks assessment',   val('barrAssess'),     8);
+  field('Medication access assessed', val('medAccess'),      8);
+  field('SM high-risk',               val('highRisk'),       8);
+  field('SM pending separation',      val('pendingSep'),     8);
+  field('SM marital status',          val('maritalStatus'),  8);
+  field('Deployed last 12 months',    val('deployed'),       8);
+  if (val('unitActions').trim()) multilineField('Unit actions', val('unitActions'), 8);
+
+  sectionHeader('10. Notification');
+  NOTIF_ROWS.forEach(r => {
+    const chk = document.getElementById('chk' + r.id).checked;
+    const dtg = val('notif' + r.id) || 'NOT NOTIFIED';
+    const status = chk ? `NOTIFIED — ${dtg}` : dtg;
+    const labelText = r.mandatory ? r.label + ' [MANDATORY-IMMEDIATE]' : r.label;
+    field(labelText, status, 8);
+  });
+
+  sectionHeader('11. Submitted By');
+  field('Name',          val('subName'),  8);
+  field('Rank',          val('subRank'),  8);
+  field('Unit',          val('subUnit'),  8);
+  field('Duty Position', val('subDuty'),  8);
+
+  sectionHeader('12. Garrison');
+  field('Garrison', garrison);
+
+  // Footer on all pages
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(...GREEN_BG);
+    doc.rect(0, pageH - 16, pageW, 16, 'F');
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7);
+    doc.setTextColor(...WHITE);
+    doc.text('UNCLASSIFIED', pageW/2, pageH - 5, {align:'center'});
+    doc.setFont('helvetica','normal');
+    doc.text(`Page ${i} of ${pageCount}`, pageW - margin, pageH - 5, {align:'right'});
+  }
+
+  const filename = `CCIR_Report_${val('ccirNum').replace(/[^a-zA-Z0-9]/g,'_')}_${val('dtg').replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  doc.save(filename);
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildNotifRows();
+  prefillFromURL();
+});
 </script>
 
 </body>
