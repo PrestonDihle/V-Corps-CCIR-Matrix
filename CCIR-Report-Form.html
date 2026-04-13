@@ -32,15 +32,6 @@
   }
 
   /* HEADER */
-  .unclass-strip {
-    background: #27ae60;
-    color: #fff;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    padding: 4px 0;
-  }
   .top-bar {
     background: var(--army-dark);
     border-bottom: 3px solid var(--army-tan);
@@ -258,7 +249,6 @@
 </head>
 <body>
 
-<div class="unclass-strip">UNCLASSIFIED</div>
 <div class="top-bar">
   <div class="header-row">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="40" height="40" aria-label="V Corps patch" style="flex-shrink:0">
@@ -761,10 +751,7 @@ function generateReport() {
   const hr = '─'.repeat(60);
   const garrison = garrisonValue();
 
-  lines.push('UNCLASSIFIED');
-  lines.push(hr);
-  lines.push('V CORPS CCIR REPORT');
-  lines.push(hr);
+  lines.push(`CCIR ${radio('category')} ${val('ccirNum')} ${val('dtg')} ${val('cmdLevel')}`);
   lines.push('');
   lines.push(`1.  DTG: ${val('dtg')}`);
   lines.push('');
@@ -785,17 +772,17 @@ function generateReport() {
   val('cmdActions').split('\n').forEach(l => lines.push(`    ${l}`));
   lines.push('');
   lines.push('9.  OTHER COMMAND CONSIDERATIONS:');
-  lines.push(`    a. SMs live on or off post:           ${val('smOnPost')}`);
-  lines.push(`    b. Chaplain visit:                    ${val('chaplain')}`);
-  lines.push(`    c. SM access to weapons:              ${val('weaponAccess')}`);
-  lines.push(`    d. Home/barracks assessment:          ${val('barrAssess')}`);
-  lines.push(`    e. CoC assessed medication access:    ${val('medAccess')}`);
-  lines.push(`    f. SM high-risk:                      ${val('highRisk')}`);
-  lines.push(`    g. SM pending separation:             ${val('pendingSep')}`);
-  lines.push(`    h. SM marital status:                 ${val('maritalStatus')}`);
-  lines.push(`    i. Deployed within last 12 months:    ${val('deployed')}`);
-  lines.push(`    j. Alcohol:                           ${val('alcohol')}`);
-  lines.push(`    k. Drugs:                             ${val('drugs')}`);
+  lines.push(`    a. SMs live on or off post: ${val('smOnPost')}`);
+  lines.push(`    b. Chaplain visit: ${val('chaplain')}`);
+  lines.push(`    c. SM access to weapons: ${val('weaponAccess')}`);
+  lines.push(`    d. Home/barracks assessment: ${val('barrAssess')}`);
+  lines.push(`    e. CoC assessed medication access: ${val('medAccess')}`);
+  lines.push(`    f. SM high-risk: ${val('highRisk')}`);
+  lines.push(`    g. SM pending separation: ${val('pendingSep')}`);
+  lines.push(`    h. SM marital status: ${val('maritalStatus')}`);
+  lines.push(`    i. Deployed within last 12 months: ${val('deployed')}`);
+  lines.push(`    j. Alcohol: ${val('alcohol')}`);
+  lines.push(`    k. Drugs: ${val('drugs')}`);
   if (val('unitActions').trim()) {
     lines.push('    l. Unit actions:');
     val('unitActions').split('\n').forEach(l => lines.push(`       ${l}`));
@@ -806,19 +793,16 @@ function generateReport() {
     const dtg = val('notif' + r.id) || 'NOT NOTIFIED';
     const chk = document.getElementById('chk' + r.id).checked;
     const status = chk ? `NOTIFIED — ${dtg}` : dtg === 'NOT NOTIFIED' ? 'NOT NOTIFIED' : dtg;
-    lines.push(`    ${r.label.padEnd(42)} ${status}`);
+    lines.push(`    ${r.label}: ${status}`);
   });
   lines.push('');
   lines.push('11. SUBMITTED BY:');
-  lines.push(`    Name:           ${val('subName')}`);
-  lines.push(`    Rank:           ${val('subRank')}`);
-  lines.push(`    Unit:           ${val('subUnit')}`);
-  lines.push(`    Duty Position:  ${val('subDuty')}`);
+  lines.push(`    Name: ${val('subName')}`);
+  lines.push(`    Rank: ${val('subRank')}`);
+  lines.push(`    Unit: ${val('subUnit')}`);
+  lines.push(`    Duty Position: ${val('subDuty')}`);
   lines.push('');
   lines.push(`12. GARRISON: ${garrison}`);
-  lines.push('');
-  lines.push(hr);
-  lines.push('UNCLASSIFIED');
 
   const text = lines.join('\n');
   document.getElementById('reportOutput').value = text;
