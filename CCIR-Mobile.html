@@ -383,6 +383,24 @@
   /* ── HIDDEN ── */
   .hidden { display: none !important; }
 
+  /* ── REPORT BUTTON ── */
+  .report-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    background: #1e8449;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .report-btn:active { background: #145a32; }
+
   /* ── CONTACTS PANEL ── */
   .contacts-btn {
     position: absolute;
@@ -759,7 +777,8 @@ function buildDetail(row) {
     `</div>`;
   }
 
-  return descHtml + metaHtml + notifHtml + notesHtml;
+  const reportBtn = `<button class="report-btn" onclick="submitFromCard('${row.cat}','${row.num}','${row.urg}')">&#9998; Submit Report — ${row.cat}-${row.num}</button>`;
+  return descHtml + metaHtml + notifHtml + notesHtml + reportBtn;
 }
 
 function toggleCard(card) {
@@ -873,6 +892,14 @@ function renderList() {
   // Set first chip active
   document.querySelector('.chip[data-cat=""]').classList.add('active');
   applyFilters();
+}
+
+// ═══════════════════════════════════════════════════
+// SUBMIT FROM CARD
+// ═══════════════════════════════════════════════════
+function submitFromCard(cat, num, urg) {
+  const params = new URLSearchParams({ cat, num, urg });
+  window.location.href = 'CCIR-Report-Form.html?' + params.toString();
 }
 
 // ═══════════════════════════════════════════════════
