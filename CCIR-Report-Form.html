@@ -827,8 +827,32 @@ function generateReport() {
 async function copyReport() {
   const text = document.getElementById('reportOutput').value;
   if (!text) return;
-  try { await navigator.clipboard.writeText(text); }
-  catch (e) { const ta = document.getElementById('reportOutput'); ta.select(); document.execCommand('copy'); }
+
+  // Build HTML version so **label** renders as bold when pasted into Outlook
+  const htmlLines = text.split('\n').map(line => {
+    const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const bolded  = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    return bolded || '&nbsp;';
+  });
+  const htmlContent = '<div style="font-family:Courier New,monospace;font-size:11pt;line-height:1.6">'
+    + htmlLines.join('<br>') + '</div>';
+
+  // Strip **markers** from plain-text version so it reads cleanly
+  const plainText = text.replace(/\*\*(.+?)\*\*/g, '$1');
+
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/plain': new Blob([plainText], { type: 'text/plain' }),
+        'text/html':  new Blob([htmlContent], { type: 'text/html' })
+      })
+    ]);
+  } catch (e) {
+    // Fallback for browsers that don't support ClipboardItem
+    try { await navigator.clipboard.writeText(plainText); }
+    catch (e2) { const ta = document.getElementById('reportOutput'); ta.select(); document.execCommand('copy'); }
+  }
+
   const toast = document.getElementById('copyToast');
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2500);
