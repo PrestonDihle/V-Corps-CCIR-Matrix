@@ -333,12 +333,8 @@
   <div class="form-title">5. Reporting Command</div>
   <div class="form-section">
     <div class="field-group">
-      <label>Command Level <span class="req">*</span></label>
-      <div class="radio-group" id="cmdLevel">
-        <label><input type="radio" name="cmdLevel" value="Company"> Company</label>
-        <label><input type="radio" name="cmdLevel" value="BN"> BN</label>
-        <label><input type="radio" name="cmdLevel" value="BDE"> BDE</label>
-      </div>
+      <label for="cmdLevel">Command Level <span class="req">*</span></label>
+      <input type="text" id="cmdLevel" placeholder="e.g. Company, BN, BDE, etc." autocomplete="off">
     </div>
   </div>
 
@@ -724,7 +720,7 @@ function validate() {
   // Radios
   if (!radio('category'))   { document.getElementById('ccirCategory').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
   if (!radio('reportType')) { document.getElementById('reportType').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
-  if (!radio('cmdLevel'))   { document.getElementById('cmdLevel').querySelectorAll('label').forEach(l=>l.style.outline='2px solid #a93226'); ok = false; }
+  if (!val('cmdLevel'))     { document.getElementById('cmdLevel').style.outline='2px solid #a93226'; ok = false; }
   return ok;
 }
 
@@ -732,7 +728,8 @@ function validate() {
 // GENERATE TEXT REPORT
 // ═══════════════════════════════════════════════════
 function generateReport() {
-  document.querySelectorAll('.radio-group label, #reportType label, #cmdLevel label').forEach(l => l.style.outline = '');
+  document.querySelectorAll('.radio-group label, #reportType label').forEach(l => l.style.outline = '');
+  document.getElementById('cmdLevel').style.outline = '';
   const msgEl = document.getElementById('validationMsg');
   msgEl.classList.remove('show');
 
@@ -759,7 +756,7 @@ function generateReport() {
   lines.push('');
   lines.push(`4.  TYPE OF REPORT: ${radio('reportType')}`);
   lines.push('');
-  lines.push(`5.  REPORTING COMMAND: ${radio('cmdLevel')}`);
+  lines.push(`5.  REPORTING COMMAND: ${val('cmdLevel')}`);
   lines.push('');
   lines.push(`6.  LOCATION OF INCIDENT: ${val('location')}`);
   lines.push('');
@@ -972,7 +969,7 @@ function downloadPDF() {
   field('Report Type', radio('reportType'));
 
   sectionHeader('5. Reporting Command');
-  field('Command Level', radio('cmdLevel'));
+  field('Command Level', val('cmdLevel'));
 
   sectionHeader('6. Location of Incident');
   field('Location', val('location'));
