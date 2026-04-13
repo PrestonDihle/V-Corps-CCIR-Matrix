@@ -473,10 +473,6 @@
 
     </div>
 
-    <div class="field-group" style="margin-top:14px">
-      <label for="unitActions">Actions by unit if necessary?<span class="hint"> (optional)</span></label>
-      <textarea id="unitActions" placeholder="Describe any additional unit actions..."></textarea>
-    </div>
   </div>
 
   <!-- ── 9b. Assistance Requested ── -->
@@ -803,10 +799,6 @@ function generateReport() {
   lines.push(`    i. Deployed within last 12 months: ${val('deployed')}`);
   lines.push(`    j. Alcohol: ${val('alcohol')}`);
   lines.push(`    k. Drugs: ${val('drugs')}`);
-  if (val('unitActions').trim()) {
-    lines.push('    l. Unit actions:');
-    val('unitActions').split('\n').forEach(l => lines.push(`       ${l}`));
-  }
   lines.push('');
   lines.push('10. NOTIFICATION:');
   NOTIF_ROWS.forEach(r => {
@@ -1016,7 +1008,6 @@ function downloadPDF() {
   field('Deployed last 12 months',    val('deployed'),       8);
   field('Alcohol',                    val('alcohol'),        8);
   field('Drugs',                      val('drugs'),          8);
-  if (val('unitActions').trim()) multilineField('Unit actions', val('unitActions'), 8);
 
   sectionHeader('10. Notification');
   NOTIF_ROWS.forEach(r => {
