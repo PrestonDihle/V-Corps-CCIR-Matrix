@@ -93,16 +93,18 @@
   }
   .btn-mobile-toggle {
     padding: 5px 12px;
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid var(--army-tan);
     border-radius: 3px;
     font-size: 12px;
     cursor: pointer;
     font-weight: bold;
-    background: #1b3a78;
-    color: #fff;
+    background: rgba(0,0,0,0.2);
+    color: var(--army-tan);
     white-space: nowrap;
+    margin-left: auto;
+    align-self: flex-end;
   }
-  .btn-mobile-toggle:hover { background: #243f8a; }
+  .btn-mobile-toggle:hover { background: rgba(0,0,0,0.35); }
   .btn-reset { background: var(--army-tan); color: var(--army-dark); }
   .btn-reset:hover { background: #b5a060; }
   .btn-submit-row {
@@ -519,8 +521,8 @@
     <a href="CCIR-Report-Form.html" style="text-decoration:none">
       <button class="btn" style="background:#1e8449;color:#fff;font-weight:bold">&#9998; Submit Report</button>
     </a>
-    <button class="btn-mobile-toggle" onclick="switchToMobile()">&#128241; Mobile View</button>
   </div>
+  <button class="btn-mobile-toggle" onclick="switchToMobile()">Mobile View</button>
 </div>
 
 <div class="tabs">
