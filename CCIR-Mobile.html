@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
+<script>
+(function(){
+  var pref = localStorage.getItem('ccirViewPref');
+  if (pref === 'mobile') return;
+  var mobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  if (pref === 'desktop' || !mobile) {
+    window.location.replace('index.html');
+  }
+})();
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>V Corps CCIR — Mobile</title>
@@ -499,6 +510,21 @@
   }
   .m-call-btn.dsn  { background: var(--army-dark); color: var(--army-tan); }
   .m-call-btn.cell { background: #1e5c8a; color: #fff; }
+
+  .desktop-toggle-btn {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    background: #1b3a78;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: .3px;
+  }
+  .desktop-toggle-btn:active { background: #243f8a; }
 </style>
 </head>
 <body>
@@ -519,6 +545,7 @@
       <h1>V Corps CCIR Matrix</h1>
       <p>As of 20 February 2026 &mdash; Tap any entry for full details</p>
     </div>
+    <button class="desktop-toggle-btn" onclick="switchToDesktop()">&#128444; Desktop</button>
     <button class="contacts-btn" onclick="toggleContacts()">&#128222; Contacts</button>
   </div>
   <div class="search-row">
@@ -900,6 +927,14 @@ function renderList() {
 function submitFromCard(cat, num, urg) {
   const params = new URLSearchParams({ cat, num, urg });
   window.location.href = 'CCIR-Report-Form.html?' + params.toString();
+}
+
+// ═══════════════════════════════════════════════════
+// VIEW TOGGLE
+// ═══════════════════════════════════════════════════
+function switchToDesktop() {
+  localStorage.setItem('ccirViewPref', 'desktop');
+  window.location.href = 'index.html';
 }
 
 // ═══════════════════════════════════════════════════

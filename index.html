@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>V Corps CCIR Matrix — 20 FEB 2026</title>
+<script>
+(function(){
+  var pref = localStorage.getItem('ccirViewPref');
+  if (pref === 'desktop') return;
+  var mobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+  if (pref === 'mobile' || mobile) {
+    window.location.replace('CCIR-Mobile.html');
+  }
+})();
+</script>
 <style>
   :root {
     --army-green: #4a5c3a;
@@ -80,6 +91,18 @@
     cursor: pointer;
     font-weight: bold;
   }
+  .btn-mobile-toggle {
+    padding: 5px 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #1b3a78;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .btn-mobile-toggle:hover { background: #243f8a; }
   .btn-reset { background: var(--army-tan); color: var(--army-dark); }
   .btn-reset:hover { background: #b5a060; }
   .btn-submit-row {
@@ -496,6 +519,7 @@
     <a href="CCIR-Report-Form.html" style="text-decoration:none">
       <button class="btn" style="background:#1e8449;color:#fff;font-weight:bold">&#9998; Submit Report</button>
     </a>
+    <button class="btn-mobile-toggle" onclick="switchToMobile()">&#128241; Mobile View</button>
   </div>
 </div>
 
@@ -970,6 +994,14 @@ function closeModalBtn() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+
+// ═══════════════════════════════════════════════════
+// VIEW TOGGLE
+// ═══════════════════════════════════════════════════
+function switchToMobile() {
+  localStorage.setItem('ccirViewPref', 'mobile');
+  window.location.href = 'CCIR-Mobile.html';
+}
 
 // ═══════════════════════════════════════════════════
 // INIT
