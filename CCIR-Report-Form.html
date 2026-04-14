@@ -263,7 +263,7 @@
     </svg>
     <div class="header-text">
       <h1>V Corps CCIR — Submit Report</h1>
-      <p>Complete all mandatory fields, then Generate, Copy, Email, or Download PDF</p>
+      <p>Complete all mandatory fields, then Copy or Email to generate and send the report</p>
     </div>
   </div>
   <a href="index.html" class="back-btn">&#8592; Back to Matrix</a>
@@ -556,10 +556,11 @@ Clearly discern confirmed facts from unconfirmed assumptions: what happened, spe
 
 <!-- STICKY ACTION BAR -->
 <div class="action-bar">
-  <button class="btn btn-generate" onclick="generateReport()">&#9998; Generate</button>
-  <button class="btn btn-copy" id="btnCopy" onclick="copyReport()" disabled>&#128203; Copy</button>
-  <button class="btn btn-email" id="btnEmail" onclick="emailReport()" disabled>&#9993; Email</button>
+  <button class="btn btn-copy" id="btnCopy" onclick="copyReport()">&#128203; Copy</button>
+  <button class="btn btn-email" id="btnEmail" onclick="emailReport()">&#9993; Email</button>
+  <!-- PDF export button hidden until feature is ready
   <button class="btn btn-pdf" id="btnPdf" onclick="downloadPDF()" disabled>&#128196; PDF</button>
+  -->
 </div>
 
 <script>
@@ -744,7 +745,7 @@ function validate() {
 // ═══════════════════════════════════════════════════
 // GENERATE TEXT REPORT
 // ═══════════════════════════════════════════════════
-function generateReport() {
+function buildReport() {
   document.querySelectorAll('.radio-group label, #reportType label').forEach(l => l.style.outline = '');
   document.getElementById('cmdLevel').style.outline = '';
   const msgEl = document.getElementById('validationMsg');
@@ -753,11 +754,10 @@ function generateReport() {
   if (!validate()) {
     msgEl.classList.add('show');
     msgEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
-    return;
+    return null;
   }
 
   const lines = [];
-  const hr = '─'.repeat(60);
   const garrison = garrisonValue();
 
   lines.push(`CCIR ${radio('category')} ${val('ccirNum')} ${val('dtg')} ${val('cmdLevel')}`);
@@ -818,17 +818,15 @@ function generateReport() {
   const text = lines.join('\n');
   document.getElementById('reportOutput').value = text;
   document.getElementById('outputWrap').classList.add('show');
-  document.getElementById('btnCopy').disabled = false;
-  document.getElementById('btnEmail').disabled = false;
-  document.getElementById('btnPdf').disabled = false;
   document.getElementById('outputWrap').scrollIntoView({ behavior:'smooth' });
+  return text;
 }
 
 // ═══════════════════════════════════════════════════
 // COPY
 // ═══════════════════════════════════════════════════
 async function copyReport() {
-  const text = document.getElementById('reportOutput').value;
+  const text = buildReport();
   if (!text) return;
   try { await navigator.clipboard.writeText(text); }
   catch (e) { const ta = document.getElementById('reportOutput'); ta.select(); document.execCommand('copy'); }
@@ -841,7 +839,7 @@ async function copyReport() {
 // EMAIL
 // ═══════════════════════════════════════════════════
 function emailReport() {
-  const text = document.getElementById('reportOutput').value;
+  const text = buildReport();
   if (!text) return;
   const subject = encodeURIComponent(`V Corps CCIR Report — ${radio('category')} — ${val('ccirNum')} — ${val('dtg')}`);
   const body = encodeURIComponent(text);
