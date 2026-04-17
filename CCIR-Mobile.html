@@ -414,19 +414,17 @@
 
   /* ── CONTACTS PANEL ── */
   .contacts-btn {
-    position: absolute;
-    top: 50%;
-    right: 14px;
-    transform: translateY(-50%);
-    background: var(--army-green);
+    flex: 1;
+    background: #5C7E8F;
     color: #fff;
-    border: 1px solid var(--army-tan);
+    border: 1px solid #D4DDE2;
     border-radius: 6px;
-    padding: 5px 11px;
-    font-size: 12px;
+    padding: 10px 6px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: .5px;
     cursor: pointer;
+    text-align: center;
   }
   .contacts-panel {
     display: none;
@@ -512,13 +510,14 @@
   .m-call-btn.cell { background: #1e5c8a; color: #fff; }
 
   .desktop-toggle-btn {
-    flex-shrink: 0;
-    padding: 6px 10px;
+    flex: 1;
+    padding: 10px 6px;
     background: #5C7E8F;
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 7px;
-    font-size: 11px;
+    text-align: center;
+    border: 1px solid #D4DDE2;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
@@ -545,8 +544,6 @@
       <h1>V Corps CCIR Matrix</h1>
       <p>As of 20 February 2026 &mdash; Tap any entry for full details</p>
     </div>
-    <button class="desktop-toggle-btn" onclick="switchToDesktop()">Desktop</button>
-    <button class="contacts-btn" onclick="toggleContacts()">Contacts</button>
   </div>
   <div class="search-row">
     <input type="search" id="searchBox" placeholder="&#128269; Search CCIRs…" oninput="applyFilters()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -570,10 +567,12 @@
     <span class="chip" data-cat="UKR"   onclick="setChip(this,'UKR')">Ukraine</span>
   </div>
   <div class="result-strip" id="resultStrip">Loading…</div>
-  <div style="padding: 6px 12px 8px; background: var(--army-dark);">
-    <a href="CCIR-Report-Form.html" style="text-decoration:none; display:block">
-      <button style="width:100%;padding:10px;background:#5C7E8F;color:#fff;border:1px solid #D4DDE2;border-radius:7px;font-size:14px;font-weight:800;letter-spacing:.5px;cursor:pointer;">&#9998; Submit CCIR Report</button>
+  <div style="padding: 6px 12px 8px; background: var(--army-dark); display:flex; gap:8px;">
+    <button class="desktop-toggle-btn" onclick="switchToDesktop()">Desktop</button>
+    <a href="CCIR-Report-Form.html" style="text-decoration:none; flex:1; display:flex;">
+      <button style="flex:1;padding:10px;background:#5C7E8F;color:#fff;border:1px solid #D4DDE2;border-radius:6px;font-size:13px;font-weight:800;letter-spacing:.5px;cursor:pointer;">&#9998; Submit CCIR</button>
     </a>
+    <button class="contacts-btn" onclick="toggleContacts()">Contacts</button>
   </div>
 </div>
 
