@@ -93,23 +93,23 @@
   }
   .btn-mobile-toggle {
     padding: 5px 12px;
-    border: 1px solid var(--army-tan);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 3px;
     font-size: 12px;
     cursor: pointer;
     font-weight: bold;
-    background: rgba(0,0,0,0.2);
-    color: var(--army-tan);
+    background: #5C7E8F;
+    color: #fff;
     white-space: nowrap;
     margin-left: auto;
     align-self: flex-end;
   }
-  .btn-mobile-toggle:hover { background: rgba(0,0,0,0.35); }
-  .btn-reset { background: var(--army-tan); color: #1a1a1a; }
-  .btn-reset:hover { background: #8a8a8a; }
+  .btn-mobile-toggle:hover { filter: brightness(1.25); }
+  .btn-reset { background: #5C7E8F; color: #fff; }
+  .btn-reset:hover { filter: brightness(1.25); }
   .btn-submit-row {
     padding: 4px 10px;
-    background: #1e8449;
+    background: #5C7E8F;
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -119,7 +119,7 @@
     white-space: nowrap;
     transition: background .12s;
   }
-  .btn-submit-row:hover { background: #145a32; }
+  .btn-submit-row:hover { filter: brightness(1.25); }
 
   /* ── STATS BAR ── */
   .stats-bar {
@@ -519,7 +519,7 @@
   <div class="btn-group">
     <button class="btn btn-reset" onclick="resetFilters()">&#10006; Reset</button>
     <a href="CCIR-Report-Form.html" style="text-decoration:none">
-      <button class="btn" style="background:#1e8449;color:#fff;font-weight:bold">&#9998; Submit Report</button>
+      <button class="btn" style="background:#5C7E8F;color:#fff;font-weight:bold">&#9998; Submit Report</button>
     </a>
   </div>
   <button class="btn-mobile-toggle" onclick="switchToMobile()">Mobile View</button>
