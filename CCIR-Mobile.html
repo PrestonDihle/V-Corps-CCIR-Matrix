@@ -20,13 +20,13 @@
 <title>V Corps CCIR — Mobile</title>
 <style>
   :root {
-    --army-dark:  #2d3a1e;
-    --army-green: #4a5c3a;
-    --army-tan:   #c8b87a;
-    --army-light: #f0ece0;
-    --bg:         #eae6da;
+    --army-dark:  #020659;
+    --army-green: #1A3073;
+    --army-tan:   #0511F2;
+    --army-light: #F2F2F2;
+    --bg:         #EEEEF5;
     --card-bg:    #ffffff;
-    --border:     #d4cdb8;
+    --border:     #c0c8e0;
     --c-red:      #a93226;
     --c-amber:    #d68910;
     --c-green:    #1e8449;
@@ -34,7 +34,7 @@
     --c-gray:     #717d7e;
     --c-wu:       #922b21;
     --c-fl:       #d4ac0d;
-    --text:       #1a1a1a;
+    --text:       #0D0D0D;
     --subtext:    #555;
     --header-h:   112px;
   }
@@ -89,7 +89,7 @@
   }
   .header-text p {
     font-size: 10px;
-    color: #b8c8a0;
+    color: #b0c0e8;
     margin-top: 2px;
   }
 
@@ -105,7 +105,7 @@
     border: none;
     border-radius: 8px;
     font-size: 14px;
-    background: #f0ece0;
+    background: #F2F2F2;
     color: var(--text);
     outline: none;
   }
@@ -116,7 +116,7 @@
     border: none;
     border-radius: 8px;
     font-size: 13px;
-    background: #f0ece0;
+    background: #F2F2F2;
     color: var(--text);
     outline: none;
     max-width: 110px;
@@ -124,7 +124,7 @@
 
   .result-strip {
     background: var(--army-green);
-    color: #d4e8b0;
+    color: #b0c8f8;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: .4px;
@@ -134,7 +134,7 @@
 
   /* ── FILTER CHIPS ── */
   .chip-row {
-    background: #1e2b12;
+    background: #010B30;
     padding: 6px 12px;
     display: flex;
     gap: 6px;
@@ -146,8 +146,8 @@
 
   .chip {
     flex-shrink: 0;
-    background: #4a6030;
-    color: #e8ecd8;
+    background: #1A3073;
+    color: #d0d8f0;
     border: 1px solid rgba(255,255,255,.15);
     border-radius: 20px;
     padding: 5px 13px;
@@ -157,7 +157,7 @@
     transition: background .15s;
     white-space: nowrap;
   }
-  .chip:active { background: #6a8050; }
+  .chip:active { background: #0a1f6b; }
   .chip.urg-c   { background: #922b21; color: #fff; }
   .chip.urg-i   { background: #d4ac0d; color: #1a1a1a; }
   .chip.urg-r   { background: #1a6b3c; color: #fff; }
@@ -269,7 +269,7 @@
     display: none;
     border-top: 1px solid var(--border);
     padding: 13px 14px 14px;
-    background: #fafaf7;
+    background: #f0f0f8;
     animation: slideDown .18s ease-out;
   }
   .card.open .card-detail { display: block; }
@@ -361,7 +361,7 @@
   /* Notes */
   .notes-section { margin-top: 4px; }
   .note-item {
-    background: #fff8e8;
+    background: #eeeef8;
     border-left: 3px solid var(--army-tan);
     border-radius: 0 6px 6px 0;
     padding: 8px 10px;
@@ -488,7 +488,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    border-bottom: 1px solid #f0ece0;
+    border-bottom: 1px solid #e0e0f0;
   }
   .contacts-row:last-child { border-bottom: none; }
   .contacts-pos {
@@ -514,7 +514,7 @@
   .desktop-toggle-btn {
     flex-shrink: 0;
     padding: 6px 10px;
-    background: #1b3a78;
+    background: #1A3073;
     color: #fff;
     border: 1px solid rgba(255,255,255,0.3);
     border-radius: 7px;
@@ -524,7 +524,7 @@
     white-space: nowrap;
     letter-spacing: .3px;
   }
-  .desktop-toggle-btn:active { background: #243f8a; }
+  .desktop-toggle-btn:active { background: #0a1f6b; }
 </style>
 </head>
 <body>
@@ -534,7 +534,7 @@
   <div class="unclass-strip">UNCLASSIFIED</div>
   <div class="header-row" style="position:relative;">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 105" width="38" height="38" aria-label="V Corps patch">
-      <polygon points="50,3 97,36.5 79,97 21,97 3,36.5" fill="#1b3a78" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+      <polygon points="50,3 97,36.5 79,97 21,97 3,36.5" fill="#1A3073" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
       <line x1="50"  y1="3"    x2="50" y2="53" stroke="white" stroke-width="2.8"/>
       <line x1="97"  y1="36.5" x2="50" y2="53" stroke="white" stroke-width="2.8"/>
       <line x1="79"  y1="97"   x2="50" y2="53" stroke="white" stroke-width="2.8"/>
