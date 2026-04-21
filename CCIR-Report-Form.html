@@ -874,10 +874,35 @@ async function downloadPDF() {
   const pdfDoc = await PDFDocument.load(bytes);
   const form = pdfDoc.getForm();
 
+  // ── 3. Build exact-match map from runtime field names ──
+  // pdf-lib's getTextField(name) splits on '.' to walk the AcroForm hierarchy,
+  // which breaks when field names contain literal dots (e.g. "1. Date Time …").
+  // Instead we enumerate all fields once and look them up by exact getName() string,
+  // falling back to a substring/suffix search for any FQN-prefix variation.
+  const fieldsByName = new Map();
+  for (const f of form.getFields()) {
+    fieldsByName.set(f.getName(), f);
+  }
+  console.log('PDF fields:', [...fieldsByName.keys()]);
+
+  // Resolve a logical name to an actual field object.
+  // 1. Exact match, 2. key ends with name, 3. key contains name (case-sensitive).
+  const resolveField = (name) => {
+    if (fieldsByName.has(name)) return fieldsByName.get(name);
+    const keys = [...fieldsByName.keys()];
+    const byEnds = keys.find(k => k.endsWith(name));
+    if (byEnds) return fieldsByName.get(byEnds);
+    const byIncludes = keys.find(k => k.includes(name));
+    if (byIncludes) return fieldsByName.get(byIncludes);
+    return undefined;
+  };
+
   // ── 3. Helpers ──
   const setText = (name, value) => {
-    try { form.getTextField(name).setText(value || ''); }
-    catch (e) { console.warn('Text field missing:', name, e.message); }
+    const f = resolveField(name);
+    if (!f) { console.warn('Text field missing:', name); return; }
+    try { f.setText(value || ''); }
+    catch (e) { console.warn('setText failed for', name, e.message); }
   };
   const checkText = (name, on) => setText(name, on ? '☒' : '');
 
@@ -909,19 +934,21 @@ async function downloadPDF() {
   const garrisonSel = val('garrison');
   const garrison = (garrisonSel === 'Other') ? val('garrisonOther') : garrisonSel;
 
-  // ── 5. Fill text fields (field names are byte-exact from the AcroForm) ──
-  setText('1.1. Date Time Group (DTG) of This Report',                                              val('dtg'));
-  setText('CCIR Category Number *e.CCIR Category Number *e.g.CCIR Category Number *e.g. GEN-12, SPOT-11', val('ccirNum'));
-  setText('5 Reporting Command',                   val('cmdLevel'));
-  setText('6 Location of Incident',                val('location'));
-  setText('7.7. Description of Incident',          val('description'));
-  setText('8.8. Command Actions Taken',            actions);
-  setText('9.9. Other Command Considerations',     sec9);
-  setText('12.12. Garrison',                       garrison);
-  setText('11 Name Individual Submitting Report',  val('subName'));
-  setText('Rank',                                  val('subRank'));
-  setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
-  setText('Duty Position',                         val('subDuty'));
+  // ── 5. Fill text fields ──
+  // Names are the raw leaf /T strings (or their FQNs) from the AcroForm.
+  // resolveField() handles FQN-prefix variations via fuzzy fallback.
+  setText('1. Date Time Group (DTG) of This Report',      val('dtg'));
+  setText('CCIR Category Number *e.g. GEN-12, SPOT-11',  val('ccirNum'));
+  setText('5. Reporting Command',                         val('cmdLevel'));
+  setText('6. Location of Incident',                      val('location'));
+  setText('7. Description of Incident',                   val('description'));
+  setText('8. Command Actions Taken',                     actions);
+  setText('9. Other Command Considerations',              sec9);
+  setText('12. Garrison',                                 garrison);
+  setText('11. Name (Individual Submitting Report',       val('subName'));
+  setText('Rank',                                         val('subRank'));
+  setText('Unit (MSC or BCT Submitting Report',           val('subUnit'));
+  setText('Duty Position',                                val('subDuty'));
 
   // ── 6. Category + type (text fields, not checkboxes) ──
   checkText('Immediate', cat === 'Immediate');
@@ -932,12 +959,13 @@ async function downloadPDF() {
 
   // ── 7. Notification rows ──
   // Map UI id → { PDF checkbox name, PDF time field name }
+  // Names use raw leaf /T values; resolveField() handles any FQN prefix.
   const NOTIF = {
-    CG:     { chk: 'Commanding General USAREUR Mandatory for all Immediate CCIR', time: 'Time Notified'   },
-    ES:     { chk: 'Emergency Services',                                          time: 'Time Notified_2' },
-    PM:     { chk: 'Garrison Provost Marshal',                                    time: 'Time Notified_3' },
-    G1:     { chk: 'USAREUR G1Casualty Assistance Center',                        time: 'Time Notified_4' },
-    Safety: { chk: 'USAREUR Safety Office',                                       time: 'Time Notified_5' },
+    CG:     { chk: 'Commanding General, USAREUR (Mandatory for all Immediate CCIR', time: 'Time Notified'   },
+    ES:     { chk: 'Emergency Services',                                             time: 'Time Notified_2' },
+    PM:     { chk: 'Garrison Provost Marshal',                                       time: 'Time Notified_3' },
+    G1:     { chk: 'USAREUR G1/Casualty Assistance Center',                          time: 'Time Notified_4' },
+    Safety: { chk: 'USAREUR Safety Office',                                          time: 'Time Notified_5' },
   };
   for (const key of Object.keys(NOTIF)) {
     const chkEl = document.getElementById('chk' + key);
@@ -949,7 +977,7 @@ async function downloadPDF() {
   // UI has no chkOther / notifOther inputs currently; leave blank.
   setText('undefined', '');
   setText('Time Notified_6', '');
-  setText('Other Specify', '');
+  setText('Other (Specify', '');
 
   // ── 8. Save & download ──
   const out = await pdfDoc.save();
