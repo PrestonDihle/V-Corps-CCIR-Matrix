@@ -915,14 +915,14 @@ async function downloadPDF() {
   const garrison = (garrisonSel === 'Other') ? val('garrisonOther') : garrisonSel;
 
   // ── 5. Fill text fields (field names are byte-exact from the AcroForm) ──
-  setText('Date Time Group (DTG',                  val('dtg'));
-  setText(' GEN-12, SPOT-11',                      val('ccirNum'));
+  setText('1.1. Date Time Group (DTG) of This Report',                                              val('dtg'));
+  setText('CCIR Category Number *e.CCIR Category Number *e.g.CCIR Category Number *e.g. GEN-12, SPOT-11', val('ccirNum'));
   setText('5 Reporting Command',                   val('cmdLevel'));
   setText('6 Location of Incident',                val('location'));
-  setText(' Description of Incident',              val('description'));
-  setText(' Command Actions Taken',                actions);
-  setText(' Other Command Considerations',         sec9);
-  setText(' Garrison',                             garrison);
+  setText('7.7. Description of Incident',          val('description'));
+  setText('8.8. Command Actions Taken',            actions);
+  setText('9.9. Other Command Considerations',     sec9);
+  setText('12.12. Garrison',                       garrison);
   setText('11 Name Individual Submitting Report',  val('subName'));
   setText('Rank',                                  val('subRank'));
   setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
