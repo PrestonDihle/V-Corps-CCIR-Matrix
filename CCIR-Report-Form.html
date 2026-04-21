@@ -847,6 +847,8 @@ function emailReport() {
 // ═══════════════════════════════════════════════════
 
 async function downloadPDF() {
+  console.log('downloadPDF: start');
+  try {
   if (typeof window.PDFLib === 'undefined') {
     alert('pdf-lib still loading — please try again in a moment.');
     return;
@@ -878,7 +880,7 @@ async function downloadPDF() {
   // pdf-lib's getTextField(name) splits on '.' to walk the AcroForm hierarchy,
   // which breaks when field names contain literal dots (e.g. "1. Date Time …").
   // Instead we enumerate all fields once and look them up by exact getName() string,
-  // falling back to a substring/suffix search for any FQN-prefix variation.
+  // falling back to a suffix search for any FQN-prefix variation.
   const fieldsByName = new Map();
   for (const f of form.getFields()) {
     fieldsByName.set(f.getName(), f);
@@ -886,14 +888,14 @@ async function downloadPDF() {
   console.log('PDF fields:', [...fieldsByName.keys()]);
 
   // Resolve a logical name to an actual field object.
-  // 1. Exact match, 2. key ends with name, 3. key contains name (case-sensitive).
+  // 1. Exact match, 2. key ends with name.
+  // The includes() fallback is intentionally removed — too greedy for short names.
   const resolveField = (name) => {
     if (fieldsByName.has(name)) return fieldsByName.get(name);
     const keys = [...fieldsByName.keys()];
     const byEnds = keys.find(k => k.endsWith(name));
     if (byEnds) return fieldsByName.get(byEnds);
-    const byIncludes = keys.find(k => k.includes(name));
-    if (byIncludes) return fieldsByName.get(byIncludes);
+    console.warn('unresolved field:', name);
     return undefined;
   };
 
@@ -904,7 +906,19 @@ async function downloadPDF() {
     try { f.setText(value || ''); }
     catch (e) { console.warn('setText failed for', name, e.message); }
   };
-  const checkText = (name, on) => setText(name, on ? '☒' : '');
+  // Checkbox-aware helper: uses .check()/.uncheck() for PDFCheckBox fields,
+  // falls back to setText with a Unicode ballot box for plain text fields.
+  const checkText = (name, on) => {
+    const f = resolveField(name);
+    if (!f) { console.warn('Check field missing:', name); return; }
+    try {
+      if (typeof f.check === 'function') {
+        on ? f.check() : f.uncheck();
+      } else {
+        f.setText(on ? '☒' : '');
+      }
+    } catch (e) { console.warn('checkText failed for', name, e.message); }
+  };
 
   // ── 4. Build values ──
   const cat = radio('category');   // Immediate | Priority | Routine
@@ -980,6 +994,7 @@ async function downloadPDF() {
   setText('Other (Specify', '');
 
   // ── 8. Save & download ──
+  console.log('downloadPDF: saving');
   const out = await pdfDoc.save();
   const blob = new Blob([out], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
@@ -990,6 +1005,10 @@ async function downloadPDF() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+    alert('PDF generation failed: ' + err.message);
+  }
 }
 
 // ═══════════════════════════════════════════════════
