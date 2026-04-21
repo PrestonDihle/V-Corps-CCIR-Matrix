@@ -207,7 +207,7 @@
   .btn-copy:hover { filter: brightness(1.25); }
   .btn-email { background: #5C7E8F; color: #fff; border: 1px solid #D4DDE2; }
   .btn-email:hover { filter: brightness(1.25); }
-  .btn-pdf { background: var(--army-dark); color: #fff; border: 1px solid var(--army-light); }
+  .btn-pdf { background: #5C7E8F; color: #fff; border: 1px solid #D4DDE2; }
   .btn-pdf:hover { filter: brightness(1.25); }
   .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
 
@@ -910,14 +910,14 @@ async function downloadPDF() {
   const garrison = (garrisonSel === 'Other') ? val('garrisonOther') : garrisonSel;
 
   // ── 5. Fill text fields (field names are byte-exact from the AcroForm) ──
-  setText('1. Date Time Group (DTG) of This Report',  val('dtg'));
-  setText('CCIR Category Number *e.g. GEN-12, SPOT-11', val('ccirNum'));
-  setText('5 Reporting Command',                        val('cmdLevel'));
-  setText('6 Location of Incident',                     val('location'));
-  setText('7. Description of Incident',                 val('description'));
-  setText('8. Command Actions Taken',                   actions);
-  setText('9. Other Command Considerations',            sec9);
-  setText('12. Garrison',                               garrison);
+  setText('1.1. Date Time Group (DTG) of This Report',                                              val('dtg'));
+  setText('CCIR Category Number *e.CCIR Category Number *e.g.CCIR Category Number *e.g. GEN-12, SPOT-11', val('ccirNum'));
+  setText('5 Reporting Command',                   val('cmdLevel'));
+  setText('6 Location of Incident',                val('location'));
+  setText('7.7. Description of Incident',          val('description'));
+  setText('8.8. Command Actions Taken',            actions);
+  setText('9.9. Other Command Considerations',     sec9);
+  setText('12.12. Garrison',                       garrison);
   setText('11 Name Individual Submitting Report',  val('subName'));
   setText('Rank',                                  val('subRank'));
   setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
