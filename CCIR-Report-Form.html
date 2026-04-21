@@ -879,12 +879,7 @@ async function downloadPDF() {
     try { form.getTextField(name).setText(value || ''); }
     catch (e) { console.warn('Text field missing:', name, e.message); }
   };
-  const check = (name, on) => {
-    try {
-      const cb = form.getCheckBox(name);
-      if (on) cb.check(); else cb.uncheck();
-    } catch (e) { console.warn('Checkbox missing:', name, e.message); }
-  };
+  const checkText = (name, on) => setText(name, on ? '☒' : '');
 
   // ── 4. Build values ──
   const cat = radio('category');   // Immediate | Priority | Routine
@@ -915,25 +910,25 @@ async function downloadPDF() {
   const garrison = (garrisonSel === 'Other') ? val('garrisonOther') : garrisonSel;
 
   // ── 5. Fill text fields (field names are byte-exact from the AcroForm) ──
-  setText('Date Time Group (DTG',                  val('dtg'));
-  setText(' GEN-12, SPOT-11',                      val('ccirNum'));
-  setText('5 Reporting Command',                   val('cmdLevel'));
-  setText('6 Location of Incident',                val('location'));
-  setText(' Description of Incident',              val('description'));
-  setText(' Command Actions Taken',                actions);
-  setText(' Other Command Considerations',         sec9);
-  setText(' Garrison',                             garrison);
+  setText('1. Date Time Group (DTG) of This Report',  val('dtg'));
+  setText('CCIR Category Number *e.g. GEN-12, SPOT-11', val('ccirNum'));
+  setText('5 Reporting Command',                        val('cmdLevel'));
+  setText('6 Location of Incident',                     val('location'));
+  setText('7. Description of Incident',                 val('description'));
+  setText('8. Command Actions Taken',                   actions);
+  setText('9. Other Command Considerations',            sec9);
+  setText('12. Garrison',                               garrison);
   setText('11 Name Individual Submitting Report',  val('subName'));
   setText('Rank',                                  val('subRank'));
   setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
   setText('Duty Position',                         val('subDuty'));
 
-  // ── 6. Category + type checkboxes ──
-  check('Immediate', cat === 'Immediate');
-  check('Priority',  cat === 'Priority');
-  check('Routine',   cat === 'Routine');
-  check('Initial',   rt  === 'Initial');
-  check('Follow Up', rt  === 'Follow Up');
+  // ── 6. Category + type (text fields, not checkboxes) ──
+  checkText('Immediate', cat === 'Immediate');
+  checkText('Priority',  cat === 'Priority');
+  checkText('Routine',   cat === 'Routine');
+  checkText('Initial',   rt  === 'Initial');
+  checkText('Follow Up', rt  === 'Follow Up');
 
   // ── 7. Notification rows ──
   // Map UI id → { PDF checkbox name, PDF time field name }
@@ -947,12 +942,12 @@ async function downloadPDF() {
   for (const key of Object.keys(NOTIF)) {
     const chkEl = document.getElementById('chk' + key);
     const on = chkEl && chkEl.checked;
-    check(NOTIF[key].chk, !!on);
+    checkText(NOTIF[key].chk, !!on);
     setText(NOTIF[key].time, val('notif' + key) || '');
   }
-  // "Other" notification row — PDF checkbox name is literally "undefined", time is Time Notified_6
-  // UI has no chkOther / notifOther inputs currently; leave unchecked and blank.
-  check('undefined', false);
+  // "Other" notification row — PDF field name is literally "undefined", time is Time Notified_6
+  // UI has no chkOther / notifOther inputs currently; leave blank.
+  setText('undefined', '');
   setText('Time Notified_6', '');
   setText('Other Specify', '');
 
