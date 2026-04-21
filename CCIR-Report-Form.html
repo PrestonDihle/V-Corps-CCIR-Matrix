@@ -915,7 +915,7 @@ async function downloadPDF() {
       if (typeof f.check === 'function') {
         on ? f.check() : f.uncheck();
       } else {
-        f.setText(on ? '☒' : '');
+        f.setText(on ? 'X' : '');
       }
     } catch (e) { console.warn('checkText failed for', name, e.message); }
   };
