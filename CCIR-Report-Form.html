@@ -842,67 +842,9 @@ function emailReport() {
 }
 
 // ═══════════════════════════════════════════════════
-// DOWNLOAD PDF — overlays text onto CCIR_editable.pdf
-// using pdf-lib (flat PDF, no AcroForm fields).
+// DOWNLOAD PDF — fills AcroForm fields in CCIR_edit_2.pdf
+// using pdf-lib getTextField / getCheckBox by name.
 // ═══════════════════════════════════════════════════
-
-// All coordinates in PDF points. Origin bottom-left. Page 612×792.
-// Derived from pdfplumber text-position extraction of CCIR_editable.pdf.
-// NOTE: These are calibrated coordinates — minor tuning may still be needed
-// after viewing in Adobe Reader if font metrics differ slightly.
-const FIELD_MAP = {
-  // ── Top single-line fields ──
-  dtg:          { x: 130,  y: 722,  size: 8 },
-  ccirNumber:   { x: 434,  y: 710,  size: 8 },
-  cmdLevel:     { x: 137,  y: 676,  size: 8 },
-  location:     { x: 133,  y: 656,  size: 8 },
-
-  // ── Category checkboxes (draw "X" inside the box) ──
-  catImmediate: { x: 122,  y: 707 },   // box x=120–133, y_pdf=704–715
-  catPriority:  { x: 190,  y: 707 },   // box x=188–202
-  catRoutine:   { x: 244,  y: 707 },   // box x=242–257
-
-  // ── Type of Report checkboxes ──
-  typeInitial:  { x: 122,  y: 693 },   // box x=120–133, y_pdf=690–701
-  typeFollowUp: { x: 162,  y: 693 },   // box x=160–175
-
-  // ── Large text boxes (drawWrapped) ──
-  // y = baseline of first line (just below the label line)
-  // maxH = usable height of the box in points
-  description:  { x: 52, y: 630, w: 498, maxH: 152, size: 8, lineHeight: 10 },
-  actions:      { x: 52, y: 461, w: 498, maxH: 142, size: 8, lineHeight: 10 },
-  considerations:{ x: 52, y: 304, w: 498, maxH: 110, size: 8, lineHeight: 10 },
-
-  // ── Section 10 Notification ──
-  // CG row: text at y_pdf≈181, fill after "Time Notified:" at x=416
-  timeCG:       { x: 416, y: 178, size: 7.5 },
-  // ES row: y_pdf≈166
-  timeES:       { x: 279, y: 163, size: 7.5 },
-  // PM row: y_pdf≈152
-  timePM:       { x: 279, y: 149, size: 7.5 },
-  garrison:     { x: 400, y: 149, size: 7.5 },
-  // G1 row: y_pdf≈138
-  timeG1:       { x: 279, y: 135, size: 7.5 },
-  // Safety row: y_pdf≈125
-  timeSafety:   { x: 279, y: 121, size: 7.5 },
-  // Other row: y_pdf≈111
-  otherSpecify: { x: 123, y: 108, size: 7.5 },
-  timeOther:    { x: 279, y: 108, size: 7.5 },
-
-  // Notification checkboxes: box x=50–65, rows at various y
-  chkCG:        { x: 52,  y: 173 },
-  chkES:        { x: 52,  y: 159 },
-  chkPM:        { x: 52,  y: 145 },
-  chkG1:        { x: 52,  y: 131 },
-  chkSafety:    { x: 52,  y: 117 },
-  chkOther:     { x: 52,  y: 104 },
-
-  // ── Section 11 Submitter ──
-  subName:      { x: 190, y: 84,  size: 8 },
-  subRank:      { x: 440, y: 84,  size: 8 },
-  subUnit:      { x: 195, y: 65,  size: 8 },
-  subDuty:      { x: 403, y: 65,  size: 8 },
-};
 
 async function downloadPDF() {
   if (typeof window.PDFLib === 'undefined') {
@@ -922,108 +864,33 @@ async function downloadPDF() {
     return;
   }
 
-  const { PDFDocument, StandardFonts, rgb } = PDFLib;
+  const { PDFDocument } = PDFLib;
 
   // ── 2. Load the template PDF ──
-  const b64 = window.CCIR_EDITABLE_PDF_BASE64;
-  const raw = atob(b64);
+  const raw = atob(window.CCIR_EDITABLE_PDF_BASE64);
   const bytes = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
 
   const pdfDoc = await PDFDocument.load(bytes);
-  const page   = pdfDoc.getPages()[0];
-  const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const form = pdfDoc.getForm();
 
   // ── 3. Helpers ──
-  function drawText(fieldId, text) {
-    const f = FIELD_MAP[fieldId];
-    if (!f || !text) return;
-    page.drawText(String(text), { x: f.x, y: f.y, size: f.size || 8, font, color: rgb(0,0,0) });
-  }
+  const setText = (name, value) => {
+    try { form.getTextField(name).setText(value || ''); }
+    catch (e) { console.warn('Text field missing:', name, e.message); }
+  };
+  const check = (name, on) => {
+    try {
+      const cb = form.getCheckBox(name);
+      if (on) cb.check(); else cb.uncheck();
+    } catch (e) { console.warn('Checkbox missing:', name, e.message); }
+  };
 
-  function drawCheck(fieldId) {
-    const f = FIELD_MAP[fieldId];
-    if (!f) return;
-    page.drawText('X', { x: f.x, y: f.y, size: 8, font, color: rgb(0,0,0) });
-  }
+  // ── 4. Build values ──
+  const cat = radio('category');   // Immediate | Priority | Routine
+  const rt  = radio('reportType'); // Initial   | Follow Up
 
-  // Word-wrap text into a box. y is the baseline of the FIRST line.
-  // Wraps on \n and on word boundaries. Truncates with … if overflow.
-  function drawWrapped(fieldId, text) {
-    const f = FIELD_MAP[fieldId];
-    if (!f || !text) return;
-    const maxW      = f.w || 498;
-    const size      = f.size || 8;
-    const lh        = f.lineHeight || (size * 1.25);
-    const maxLines  = Math.floor(((f.maxH || 150) / lh)) || 30;
-
-    const paragraphs = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-    const lines = [];
-
-    for (const para of paragraphs) {
-      if (lines.length >= maxLines) break;
-      if (para.trim() === '') { lines.push(''); continue; }
-      const words = para.split(' ');
-      let current = '';
-      for (const word of words) {
-        if (lines.length >= maxLines) break;
-        const test = current ? current + ' ' + word : word;
-        const w = font.widthOfTextAtSize(test, size);
-        if (w > maxW && current) {
-          lines.push(current);
-          current = word;
-        } else {
-          current = test;
-        }
-      }
-      if (current && lines.length < maxLines) lines.push(current);
-    }
-
-    let curY = f.y;
-    for (const line of lines) {
-      if (line) {
-        page.drawText(line, { x: f.x, y: curY, size, font, color: rgb(0,0,0) });
-      }
-      curY -= lh;
-    }
-  }
-
-  // ── 4. Fill fields ──
-  const cat = radio('category');
-  const rt  = radio('reportType');
-  const garrison = garrisonValue();
-
-  // Section 1 – DTG
-  drawText('dtg', val('dtg'));
-
-  // Section 2 – Category checkboxes
-  if (cat === 'Immediate') drawCheck('catImmediate');
-  if (cat === 'Priority')  drawCheck('catPriority');
-  if (cat === 'Routine')   drawCheck('catRoutine');
-
-  // Section 3 – CCIR Number
-  drawText('ccirNumber', val('ccirNum'));
-
-  // Section 4 – Type of Report
-  if (rt === 'Initial')   drawCheck('typeInitial');
-  if (rt === 'Follow Up') drawCheck('typeFollowUp');
-
-  // Section 5 – Reporting Command
-  drawText('cmdLevel', val('cmdLevel'));
-
-  // Section 6 – Location
-  drawText('location', val('location'));
-
-  // Section 7 – Description
-  drawWrapped('description', val('description'));
-
-  // Section 8 – Command Actions + Assistance Requested
-  let actions = val('cmdActions');
-  const assist = val('assistanceRequested');
-  if (assist) actions += '\n\nAssistance Requested: ' + assist;
-  drawWrapped('actions', actions);
-
-  // Section 9 – Other Command Considerations
+  // Section 9 combined considerations
   const sec9 = [
     'a. SMs live on or off post: ' + val('smOnPost'),
     'b. Chaplain visit: '          + val('chaplain'),
@@ -1037,39 +904,64 @@ async function downloadPDF() {
     'j. Alcohol: '                 + val('alcohol'),
     'k. Drugs: '                   + val('drugs'),
   ].join('\n');
-  drawWrapped('considerations', sec9);
 
-  // Section 10 – Notification
-  const notifIds = ['CG','ES','PM','G1','Safety'];
-  notifIds.forEach(id => {
-    const chk = document.getElementById('chk' + id);
-    if (chk && chk.checked) drawCheck('chk' + id);
-    const timeVal = val('notif' + id);
-    if (timeVal) drawText('time' + id, timeVal);
-  });
-  // Other row — look for any NOTIF_ROWS entry not in the standard 5
-  const otherRow = NOTIF_ROWS.find(r => !notifIds.includes(r.id));
-  if (otherRow) {
-    const chkOther = document.getElementById('chk' + otherRow.id);
-    if (chkOther && chkOther.checked) drawCheck('chkOther');
-    drawText('otherSpecify', otherRow.label);
-    drawText('timeOther', val('notif' + otherRow.id));
+  // Section 8 – Command Actions + Assistance Requested
+  let actions = val('cmdActions');
+  const assist = val('assistanceRequested');
+  if (assist) actions += '\n\nAssistance Requested: ' + assist;
+
+  // Garrison — dropdown with "Other" → free-text fallback
+  const garrisonSel = val('garrison');
+  const garrison = (garrisonSel === 'Other') ? val('garrisonOther') : garrisonSel;
+
+  // ── 5. Fill text fields (field names are byte-exact from the AcroForm) ──
+  setText('Date Time Group (DTG',                  val('dtg'));
+  setText(' GEN-12, SPOT-11',                      val('ccirNum'));
+  setText('5 Reporting Command',                   val('cmdLevel'));
+  setText('6 Location of Incident',                val('location'));
+  setText(' Description of Incident',              val('description'));
+  setText(' Command Actions Taken',                actions);
+  setText(' Other Command Considerations',         sec9);
+  setText(' Garrison',                             garrison);
+  setText('11 Name Individual Submitting Report',  val('subName'));
+  setText('Rank',                                  val('subRank'));
+  setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
+  setText('Duty Position',                         val('subDuty'));
+
+  // ── 6. Category + type checkboxes ──
+  check('Immediate', cat === 'Immediate');
+  check('Priority',  cat === 'Priority');
+  check('Routine',   cat === 'Routine');
+  check('Initial',   rt  === 'Initial');
+  check('Follow Up', rt  === 'Follow Up');
+
+  // ── 7. Notification rows ──
+  // Map UI id → { PDF checkbox name, PDF time field name }
+  const NOTIF = {
+    CG:     { chk: 'Commanding General USAREUR Mandatory for all Immediate CCIR', time: 'Time Notified'   },
+    ES:     { chk: 'Emergency Services',                                          time: 'Time Notified_2' },
+    PM:     { chk: 'Garrison Provost Marshal',                                    time: 'Time Notified_3' },
+    G1:     { chk: 'USAREUR G1Casualty Assistance Center',                        time: 'Time Notified_4' },
+    Safety: { chk: 'USAREUR Safety Office',                                       time: 'Time Notified_5' },
+  };
+  for (const key of Object.keys(NOTIF)) {
+    const chkEl = document.getElementById('chk' + key);
+    const on = chkEl && chkEl.checked;
+    check(NOTIF[key].chk, !!on);
+    setText(NOTIF[key].time, val('notif' + key) || '');
   }
-  // Garrison
-  drawText('garrison', garrison);
+  // "Other" notification row — PDF checkbox name is literally "undefined", time is Time Notified_6
+  // UI has no chkOther / notifOther inputs currently; leave unchecked and blank.
+  check('undefined', false);
+  setText('Time Notified_6', '');
+  setText('Other Specify', '');
 
-  // Section 11 – Submitter
-  drawText('subName', val('subName'));
-  drawText('subRank', val('subRank'));
-  drawText('subUnit', val('subUnit'));
-  drawText('subDuty', val('subDuty'));
-
-  // ── 5. Save & download ──
-  const pdfBytes = await pdfDoc.save();
-  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
+  // ── 8. Save & download ──
+  const out = await pdfDoc.save();
+  const blob = new Blob([out], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
   a.download = 'CCIR_Report_' + val('ccirNum').replace(/[^a-zA-Z0-9]/g,'_') + '_' + val('dtg').replace(/[^a-zA-Z0-9]/g,'_') + '.pdf';
   document.body.appendChild(a);
   a.click();
