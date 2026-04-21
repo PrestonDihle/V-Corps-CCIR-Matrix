@@ -6,10 +6,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>V Corps CCIR — Submit Report</title>
-<!-- Pako for deflate compression (XFA PDF fill) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
-<!-- Base64-encoded CCIR.pdf template -->
-<script src="ccir-template.js"></script>
+<!-- pdf-lib for PDF overlay fill -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<!-- Base64-encoded CCIR_editable.pdf template -->
+<script src="ccir-editable-template.js"></script>
 <style>
   :root {
     --army-dark:  #4a6b7a;
@@ -555,9 +555,7 @@ Clearly discern confirmed facts from unconfirmed assumptions: what happened, spe
 <div class="action-bar">
   <button class="btn btn-copy" id="btnCopy" onclick="copyReport()">&#128203; Copy</button>
   <button class="btn btn-email" id="btnEmail" onclick="emailReport()">&#9993; Email</button>
-  <!-- PDF export button hidden until feature is ready
-  <button class="btn btn-pdf" id="btnPdf" onclick="downloadPDF()" disabled>&#128196; PDF</button>
-  -->
+  <button class="btn btn-pdf" id="btnPdf" onclick="downloadPDF()">&#128196; PDF</button>
 </div>
 
 <script>
@@ -844,175 +842,234 @@ function emailReport() {
 }
 
 // ═══════════════════════════════════════════════════
-// DOWNLOAD PDF — fills the official CCIR.pdf template
+// DOWNLOAD PDF — overlays text onto CCIR_editable.pdf
+// using pdf-lib (flat PDF, no AcroForm fields).
 // ═══════════════════════════════════════════════════
 
-function xmlEsc(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-}
+// All coordinates in PDF points. Origin bottom-left. Page 612×792.
+// Derived from pdfplumber text-position extraction of CCIR_editable.pdf.
+// NOTE: These are calibrated coordinates — minor tuning may still be needed
+// after viewing in Adobe Reader if font metrics differ slightly.
+const FIELD_MAP = {
+  // ── Top single-line fields ──
+  dtg:          { x: 130,  y: 722,  size: 8 },
+  ccirNumber:   { x: 434,  y: 710,  size: 8 },
+  cmdLevel:     { x: 137,  y: 676,  size: 8 },
+  location:     { x: 133,  y: 656,  size: 8 },
 
-function buildXFADatasets() {
+  // ── Category checkboxes (draw "X" inside the box) ──
+  catImmediate: { x: 122,  y: 707 },   // box x=120–133, y_pdf=704–715
+  catPriority:  { x: 190,  y: 707 },   // box x=188–202
+  catRoutine:   { x: 244,  y: 707 },   // box x=242–257
+
+  // ── Type of Report checkboxes ──
+  typeInitial:  { x: 122,  y: 693 },   // box x=120–133, y_pdf=690–701
+  typeFollowUp: { x: 162,  y: 693 },   // box x=160–175
+
+  // ── Large text boxes (drawWrapped) ──
+  // y = baseline of first line (just below the label line)
+  // maxH = usable height of the box in points
+  description:  { x: 52, y: 630, w: 498, maxH: 152, size: 8, lineHeight: 10 },
+  actions:      { x: 52, y: 461, w: 498, maxH: 142, size: 8, lineHeight: 10 },
+  considerations:{ x: 52, y: 304, w: 498, maxH: 110, size: 8, lineHeight: 10 },
+
+  // ── Section 10 Notification ──
+  // CG row: text at y_pdf≈181, fill after "Time Notified:" at x=416
+  timeCG:       { x: 416, y: 178, size: 7.5 },
+  // ES row: y_pdf≈166
+  timeES:       { x: 279, y: 163, size: 7.5 },
+  // PM row: y_pdf≈152
+  timePM:       { x: 279, y: 149, size: 7.5 },
+  garrison:     { x: 400, y: 149, size: 7.5 },
+  // G1 row: y_pdf≈138
+  timeG1:       { x: 279, y: 135, size: 7.5 },
+  // Safety row: y_pdf≈125
+  timeSafety:   { x: 279, y: 121, size: 7.5 },
+  // Other row: y_pdf≈111
+  otherSpecify: { x: 123, y: 108, size: 7.5 },
+  timeOther:    { x: 279, y: 108, size: 7.5 },
+
+  // Notification checkboxes: box x=50–65, rows at various y
+  chkCG:        { x: 52,  y: 173 },
+  chkES:        { x: 52,  y: 159 },
+  chkPM:        { x: 52,  y: 145 },
+  chkG1:        { x: 52,  y: 131 },
+  chkSafety:    { x: 52,  y: 117 },
+  chkOther:     { x: 52,  y: 104 },
+
+  // ── Section 11 Submitter ──
+  subName:      { x: 190, y: 84,  size: 8 },
+  subRank:      { x: 440, y: 84,  size: 8 },
+  subUnit:      { x: 195, y: 65,  size: 8 },
+  subDuty:      { x: 403, y: 65,  size: 8 },
+};
+
+async function downloadPDF() {
+  if (typeof window.PDFLib === 'undefined') {
+    alert('pdf-lib still loading — please try again in a moment.');
+    return;
+  }
+  if (typeof window.CCIR_EDITABLE_PDF_BASE64 === 'undefined') {
+    alert('PDF template still loading — please try again in a moment.');
+    return;
+  }
+
+  // ── 1. Validate form ──
+  if (!validate()) {
+    const msgEl = document.getElementById('validationMsg');
+    msgEl.classList.add('show');
+    msgEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
+  // ── 2. Load the template PDF ──
+  const b64 = window.CCIR_EDITABLE_PDF_BASE64;
+  const raw = atob(b64);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+
+  const pdfDoc = await PDFDocument.load(bytes);
+  const page   = pdfDoc.getPages()[0];
+  const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  // ── 3. Helpers ──
+  function drawText(fieldId, text) {
+    const f = FIELD_MAP[fieldId];
+    if (!f || !text) return;
+    page.drawText(String(text), { x: f.x, y: f.y, size: f.size || 8, font, color: rgb(0,0,0) });
+  }
+
+  function drawCheck(fieldId) {
+    const f = FIELD_MAP[fieldId];
+    if (!f) return;
+    page.drawText('X', { x: f.x, y: f.y, size: 8, font, color: rgb(0,0,0) });
+  }
+
+  // Word-wrap text into a box. y is the baseline of the FIRST line.
+  // Wraps on \n and on word boundaries. Truncates with … if overflow.
+  function drawWrapped(fieldId, text) {
+    const f = FIELD_MAP[fieldId];
+    if (!f || !text) return;
+    const maxW      = f.w || 498;
+    const size      = f.size || 8;
+    const lh        = f.lineHeight || (size * 1.25);
+    const maxLines  = Math.floor(((f.maxH || 150) / lh)) || 30;
+
+    const paragraphs = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    const lines = [];
+
+    for (const para of paragraphs) {
+      if (lines.length >= maxLines) break;
+      if (para.trim() === '') { lines.push(''); continue; }
+      const words = para.split(' ');
+      let current = '';
+      for (const word of words) {
+        if (lines.length >= maxLines) break;
+        const test = current ? current + ' ' + word : word;
+        const w = font.widthOfTextAtSize(test, size);
+        if (w > maxW && current) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = test;
+        }
+      }
+      if (current && lines.length < maxLines) lines.push(current);
+    }
+
+    let curY = f.y;
+    for (const line of lines) {
+      if (line) {
+        page.drawText(line, { x: f.x, y: curY, size, font, color: rgb(0,0,0) });
+      }
+      curY -= lh;
+    }
+  }
+
+  // ── 4. Fill fields ──
   const cat = radio('category');
   const rt  = radio('reportType');
   const garrison = garrisonValue();
 
-  // Section 9: combine all sub-items into text block
-  const sec9 = [
-    'a. SMs live on or off post: ' + val('smOnPost'),
-    'b. Chaplain visit: ' + val('chaplain'),
-    'c. SM access to weapons: ' + val('weaponAccess'),
-    'd. Home/barracks assessment: ' + val('barrAssess'),
-    'e. CoC assessed medication access: ' + val('medAccess'),
-    'f. SM high-risk: ' + val('highRisk'),
-    'g. SM pending separation: ' + val('pendingSep'),
-    'h. SM marital status: ' + val('maritalStatus'),
-    'i. Deployed within last 12 months: ' + val('deployed'),
-    'j. Alcohol: ' + val('alcohol'),
-    'k. Drugs: ' + val('drugs'),
-  ].join('\n');
+  // Section 1 – DTG
+  drawText('dtg', val('dtg'));
 
-  // Actions + assistance combined for section 8
+  // Section 2 – Category checkboxes
+  if (cat === 'Immediate') drawCheck('catImmediate');
+  if (cat === 'Priority')  drawCheck('catPriority');
+  if (cat === 'Routine')   drawCheck('catRoutine');
+
+  // Section 3 – CCIR Number
+  drawText('ccirNumber', val('ccirNum'));
+
+  // Section 4 – Type of Report
+  if (rt === 'Initial')   drawCheck('typeInitial');
+  if (rt === 'Follow Up') drawCheck('typeFollowUp');
+
+  // Section 5 – Reporting Command
+  drawText('cmdLevel', val('cmdLevel'));
+
+  // Section 6 – Location
+  drawText('location', val('location'));
+
+  // Section 7 – Description
+  drawWrapped('description', val('description'));
+
+  // Section 8 – Command Actions + Assistance Requested
   let actions = val('cmdActions');
   const assist = val('assistanceRequested');
   if (assist) actions += '\n\nAssistance Requested: ' + assist;
+  drawWrapped('actions', actions);
 
-  // Notification checkboxes → XFA field names
-  const notifXFA = {
-    CG:     { chk:'Commanding_General_USAREUR_Mandatory_for_all_Immediate_CCIR', time:'Time_Notified'   },
-    ES:     { chk:'Emergency_Services',                                          time:'Time_Notified_2' },
-    PM:     { chk:'Garrison_Provost_Marshal',                                    time:'Time_Notified_3' },
-    G1:     { chk:'USAREUR_G1Casualty_Assistance_Center',                        time:'Time_Notified_4' },
-    Safety: { chk:'USAREUR_Safety_Office',                                       time:'Time_Notified_5' },
-  };
+  // Section 9 – Other Command Considerations
+  const sec9 = [
+    'a. SMs live on or off post: ' + val('smOnPost'),
+    'b. Chaplain visit: '          + val('chaplain'),
+    'c. SM access to weapons: '    + val('weaponAccess'),
+    'd. Home/barracks assessment: '+ val('barrAssess'),
+    'e. CoC assessed medication access: ' + val('medAccess'),
+    'f. SM high-risk: '            + val('highRisk'),
+    'g. SM pending separation: '   + val('pendingSep'),
+    'h. SM marital status: '       + val('maritalStatus'),
+    'i. Deployed within last 12 months: ' + val('deployed'),
+    'j. Alcohol: '                 + val('alcohol'),
+    'k. Drugs: '                   + val('drugs'),
+  ].join('\n');
+  drawWrapped('considerations', sec9);
 
-  let x = '';
-  x += '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">\n<xfa:data>\n<topmostSubform>\n';
-
-  // Layout placeholders (must match original structure)
-  x += '<Artifact xfa:dataNode="dataGroup"/><Artifact xfa:dataNode="dataGroup"/>\n';
-  for (let i = 0; i < 32; i++) x += '<P xfa:dataNode="dataGroup"/>\n';
-
-  // Sections 1-6 (small fields)
-  x += '<_1_DTG_of_this_Report>'                  + xmlEsc(val('dtg'))     + '</_1_DTG_of_this_Report>\n';
-  x += '<Immediate>'                              + (cat==='Immediate'?'1':'0') + '</Immediate>\n';
-  x += '<Priority>'                               + (cat==='Priority' ?'1':'0') + '</Priority>\n';
-  x += '<Routine>'                                + (cat==='Routine'  ?'1':'0') + '</Routine>\n';
-  x += '<_3_CCIR_Category_Number_Per_Matrix>'      + xmlEsc(val('ccirNum')) + '</_3_CCIR_Category_Number_Per_Matrix>\n';
-  x += '<Initial>'                                + (rt==='Initial'   ?'1':'0') + '</Initial>\n';
-  x += '<Follow_Up>'                              + (rt==='Follow-Up' ?'1':'0') + '</Follow_Up>\n';
-  x += '<_5_Reporting_Command>'                    + xmlEsc(val('cmdLevel'))+ '</_5_Reporting_Command>\n';
-  x += '<_6_Location_of_Incident>'                 + xmlEsc(val('location'))+ '</_6_Location_of_Incident>\n';
-
-  // Large text boxes (XFA field names are offset by one section from their visual position)
-  // Field _8_... renders under the "7. Description" label
-  x += '<_8_Command_Actions_Taken_Describe_those_actions_initiated_by_the_command_to_managemitigate_the_incident__include_planned_or_scheduled>';
-  x += xmlEsc(val('description'));
-  x += '</_8_Command_Actions_Taken_Describe_those_actions_initiated_by_the_command_to_managemitigate_the_incident__include_planned_or_scheduled>\n';
-  // Field _9_... renders under the "8. Command Actions" label
-  x += '<_9_Other_Command_Considerations>' + xmlEsc(actions) + '</_9_Other_Command_Considerations>\n';
-  // Field _10_... renders under the "9. Other Considerations" label
-  x += '<_10_Notification>' + xmlEsc(sec9) + '</_10_Notification>\n';
-
-  // Section 10: Notification checkboxes + times
-  NOTIF_ROWS.forEach(r => {
-    const m = notifXFA[r.id];
-    if (!m) return;
-    const chk = document.getElementById('chk' + r.id).checked;
-    x += '<' + m.chk + '>' + (chk?'1':'0') + '</' + m.chk + '>\n';
-    x += '<' + m.time + '>' + xmlEsc(val('notif'+r.id)) + '</' + m.time + '>\n';
+  // Section 10 – Notification
+  const notifIds = ['CG','ES','PM','G1','Safety'];
+  notifIds.forEach(id => {
+    const chk = document.getElementById('chk' + id);
+    if (chk && chk.checked) drawCheck('chk' + id);
+    const timeVal = val('notif' + id);
+    if (timeVal) drawText('time' + id, timeVal);
   });
-  x += '<Garrison>' + xmlEsc(garrison) + '</Garrison>\n';
-  x += '<undefined>0</undefined>\n<Other_Specify/>\n<Time_Notified_6/>\n';
+  // Other row — look for any NOTIF_ROWS entry not in the standard 5
+  const otherRow = NOTIF_ROWS.find(r => !notifIds.includes(r.id));
+  if (otherRow) {
+    const chkOther = document.getElementById('chk' + otherRow.id);
+    if (chkOther && chkOther.checked) drawCheck('chkOther');
+    drawText('otherSpecify', otherRow.label);
+    drawText('timeOther', val('notif' + otherRow.id));
+  }
+  // Garrison
+  drawText('garrison', garrison);
 
-  // Section 11: Submitter
-  x += '<_11_Name_Individual_Submitting_Report>' + xmlEsc(val('subName')) + '</_11_Name_Individual_Submitting_Report>\n';
-  x += '<Rank>'                                  + xmlEsc(val('subRank')) + '</Rank>\n';
-  x += '<Unit_MSC_or_BCT_Submitting_Report>'     + xmlEsc(val('subUnit')) + '</Unit_MSC_or_BCT_Submitting_Report>\n';
-  x += '<Duty_Position>'                         + xmlEsc(val('subDuty')) + '</Duty_Position>\n';
+  // Section 11 – Submitter
+  drawText('subName', val('subName'));
+  drawText('subRank', val('subRank'));
+  drawText('subUnit', val('subUnit'));
+  drawText('subDuty', val('subDuty'));
 
-  x += '</topmostSubform>\n</xfa:data>\n</xfa:datasets>\n';
-  return x;
-}
-
-function buildXFAForm() {
-  const allFields = [
-    '_1_DTG_of_this_Report','Immediate','Priority','Routine',
-    '_3_CCIR_Category_Number_Per_Matrix','Initial','Follow_Up',
-    '_5_Reporting_Command','_6_Location_of_Incident',
-    '_8_Command_Actions_Taken_Describe_those_actions_initiated_by_the_command_to_managemitigate_the_incident__include_planned_or_scheduled',
-    '_9_Other_Command_Considerations','_10_Notification',
-    'Commanding_General_USAREUR_Mandatory_for_all_Immediate_CCIR','Time_Notified',
-    'Emergency_Services','Time_Notified_2',
-    'Garrison_Provost_Marshal','Time_Notified_3','Garrison',
-    'USAREUR_G1Casualty_Assistance_Center','Time_Notified_4',
-    'USAREUR_Safety_Office','Time_Notified_5',
-    'undefined','Other_Specify','Time_Notified_6',
-    '_11_Name_Individual_Submitting_Report','Rank',
-    'Unit_MSC_or_BCT_Submitting_Report','Duty_Position',
-  ];
-  let f = '<form xmlns="http://www.xfa.org/schema/xfa-form/2.8/">\n';
-  f += '<subform name="topmostSubform">\n<instanceManager name="_Page1"/>\n<subform name="Page1">\n';
-  allFields.forEach(n => { f += '<field name="'+n+'"><value override="1"/></field>\n'; });
-  f += '</subform>\n<pageSet><pageArea name="PageArea1"/></pageSet>\n';
-  f += '</subform>\n</form>\n';
-  return f;
-}
-
-function downloadPDF() {
-  if (!window.pako) { alert('Compression library still loading — please try again.'); return; }
-  if (typeof CCIR_PDF_BASE64 === 'undefined') { alert('PDF template still loading — please try again.'); return; }
-
-  // ── 1. Decode base64 PDF template ──
-  const raw = atob(CCIR_PDF_BASE64);
-  const pdf = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) pdf[i] = raw.charCodeAt(i);
-
-  // ── 2. Build & compress new XFA streams ──
-  const enc = new TextEncoder();
-  const datasetsCompressed = pako.deflate(enc.encode(buildXFADatasets()));
-  const formCompressed     = pako.deflate(enc.encode(buildXFAForm()));
-
-  // ── 3. Incremental PDF update ──
-  // Original PDF ends at byte 1389407 with %%EOF
-  // Previous xref stream is obj 2445 at offset 1389007
-  // We replace obj 2440 (datasets) and obj 2441 (form)
-  const PREV_XREF = 1389007;
-  const appendStart = pdf.length;
-
-  const obj2440Hdr = enc.encode('2440 0 obj\r\n<</Filter[/FlateDecode]/Length ' + datasetsCompressed.length + '/Type/EmbeddedFile>>\r\nstream\r\n');
-  const obj2440End = enc.encode('\r\nendstream\r\nendobj\r\n');
-
-  const off2440 = appendStart;
-  const off2441 = off2440 + obj2440Hdr.length + datasetsCompressed.length + obj2440End.length;
-
-  const obj2441Hdr = enc.encode('2441 0 obj\r\n<</Filter[/FlateDecode]/Length ' + formCompressed.length + '/Type/EmbeddedFile>>\r\nstream\r\n');
-  const obj2441End = enc.encode('\r\nendstream\r\nendobj\r\n');
-
-  const xrefOff = off2441 + obj2441Hdr.length + formCompressed.length + obj2441End.length;
-
-  const pad10 = n => n.toString().padStart(10,'0');
-  const xrefAndTrailer = enc.encode(
-    'xref\r\n' +
-    '2440 2\r\n' +
-    pad10(off2440) + ' 00000 n \r\n' +
-    pad10(off2441) + ' 00000 n \r\n' +
-    'trailer\r\n' +
-    '<</Size 2446/Root 26 0 R/Prev ' + PREV_XREF + '/Info 24 0 R>>\r\n' +
-    'startxref\r\n' + xrefOff + '\r\n%%EOF\r\n'
-  );
-
-  // ── 4. Concatenate ──
-  const parts = [pdf, obj2440Hdr, datasetsCompressed, obj2440End, obj2441Hdr, formCompressed, obj2441End, xrefAndTrailer];
-  const total = parts.reduce((s,p) => s + p.length, 0);
-  const result = new Uint8Array(total);
-  let pos = 0;
-  for (const p of parts) { result.set(p, pos); pos += p.length; }
-
-  // ── 5. Download ──
-  const blob = new Blob([result], { type:'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  // ── 5. Save & download ──
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
   a.download = 'CCIR_Report_' + val('ccirNum').replace(/[^a-zA-Z0-9]/g,'_') + '_' + val('dtg').replace(/[^a-zA-Z0-9]/g,'_') + '.pdf';
   document.body.appendChild(a);
   a.click();
