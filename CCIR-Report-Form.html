@@ -879,12 +879,7 @@ async function downloadPDF() {
     try { form.getTextField(name).setText(value || ''); }
     catch (e) { console.warn('Text field missing:', name, e.message); }
   };
-  const check = (name, on) => {
-    try {
-      const cb = form.getCheckBox(name);
-      if (on) cb.check(); else cb.uncheck();
-    } catch (e) { console.warn('Checkbox missing:', name, e.message); }
-  };
+  const checkText = (name, on) => setText(name, on ? '☒' : '');
 
   // ── 4. Build values ──
   const cat = radio('category');   // Immediate | Priority | Routine
@@ -928,12 +923,12 @@ async function downloadPDF() {
   setText('Unit MSC or BCT Submitting Report',     val('subUnit'));
   setText('Duty Position',                         val('subDuty'));
 
-  // ── 6. Category + type checkboxes ──
-  check('Immediate', cat === 'Immediate');
-  check('Priority',  cat === 'Priority');
-  check('Routine',   cat === 'Routine');
-  check('Initial',   rt  === 'Initial');
-  check('Follow Up', rt  === 'Follow Up');
+  // ── 6. Category + type (text fields, not checkboxes) ──
+  checkText('Immediate', cat === 'Immediate');
+  checkText('Priority',  cat === 'Priority');
+  checkText('Routine',   cat === 'Routine');
+  checkText('Initial',   rt  === 'Initial');
+  checkText('Follow Up', rt  === 'Follow Up');
 
   // ── 7. Notification rows ──
   // Map UI id → { PDF checkbox name, PDF time field name }
@@ -947,12 +942,12 @@ async function downloadPDF() {
   for (const key of Object.keys(NOTIF)) {
     const chkEl = document.getElementById('chk' + key);
     const on = chkEl && chkEl.checked;
-    check(NOTIF[key].chk, !!on);
+    checkText(NOTIF[key].chk, !!on);
     setText(NOTIF[key].time, val('notif' + key) || '');
   }
-  // "Other" notification row — PDF checkbox name is literally "undefined", time is Time Notified_6
-  // UI has no chkOther / notifOther inputs currently; leave unchecked and blank.
-  check('undefined', false);
+  // "Other" notification row — PDF field name is literally "undefined", time is Time Notified_6
+  // UI has no chkOther / notifOther inputs currently; leave blank.
+  setText('undefined', '');
   setText('Time Notified_6', '');
   setText('Other Specify', '');
 
