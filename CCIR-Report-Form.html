@@ -285,7 +285,7 @@
   <div class="form-section">
     <div class="field-group">
       <div class="dtg-row">
-        <input type="text" id="dtg" placeholder="DDHHmmZ MMM YYYY" autocomplete="off">
+        <input type="text" id="dtg" placeholder="DD HHmmZ MMM YYYY" autocomplete="off">
         <button class="dtg-now-btn" type="button" onclick="fillDTGNow()">&#128336; Now (Zulu)</button>
       </div>
     </div>
@@ -586,7 +586,7 @@ function buildNotifRows() {
               <input type="checkbox" id="chk${r.id}">
               &#10003; Notified
             </label>
-            <input type="text" class="notif-dtg" id="notif${r.id}" placeholder="DDHHmmZ MMM YYYY">
+            <input type="text" class="notif-dtg" id="notif${r.id}" placeholder="DD HHmmZ MMM YYYY">
           </div>
           <div class="notif-picker-row" id="picker${r.id}">
             <span class="notif-picker-note">&#9888; Enter local date/time below — auto-converts to Zulu (UTC)</span>
@@ -610,7 +610,7 @@ function toZuluDTG(date) {
   const d = date.getUTCDate().toString().padStart(2,'0');
   const h = date.getUTCHours().toString().padStart(2,'0');
   const m = date.getUTCMinutes().toString().padStart(2,'0');
-  return `${d}${h}${m}Z ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+  return `${d} ${h}${m}Z ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
 function fillDTGNow() {
@@ -890,11 +890,18 @@ async function downloadPDF() {
   // Resolve a logical name to an actual field object.
   // 1. Exact match, 2. key ends with name.
   // The includes() fallback is intentionally removed — too greedy for short names.
+  const normalize = s => s.replace(/[^a-z0-9]/gi, '').toLowerCase();
   const resolveField = (name) => {
     if (fieldsByName.has(name)) return fieldsByName.get(name);
     const keys = [...fieldsByName.keys()];
     const byEnds = keys.find(k => k.endsWith(name));
     if (byEnds) return fieldsByName.get(byEnds);
+    const target = normalize(name);
+    const byNorm = keys.find(k => {
+      const n = normalize(k);
+      return n === target || n.endsWith(target) || n.includes(target);
+    });
+    if (byNorm) return fieldsByName.get(byNorm);
     console.warn('unresolved field:', name);
     return undefined;
   };
@@ -993,7 +1000,14 @@ async function downloadPDF() {
   setText('Time Notified_6', '');
   setText('Other (Specify', '');
 
-  // ── 8. Save & download ──
+  // ── 8. Force font size 10 on all text fields ──
+  for (const f of form.getFields()) {
+    if (typeof f.setFontSize === 'function') {
+      try { f.setFontSize(10); } catch (e) { /* ignore */ }
+    }
+  }
+
+  // ── 9. Save & download ──
   console.log('downloadPDF: saving');
   const out = await pdfDoc.save();
   const blob = new Blob([out], { type: 'application/pdf' });
